@@ -1,17 +1,63 @@
+<?php
+// Enable error reporting to debug blank page issues
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Authenticate and connect to the database
+require_once('auth.php');
+include('../connect.php');
+
+// Get student ID and tab from URL for pre-selection
+$preselected_student_id = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_NUMBER_INT);
+$active_tab_param = filter_input(INPUT_GET, 'tab', FILTER_UNSAFE_RAW); // Updated from deprecated FILTER_SANITIZE_STRING
+
+// Determine which tab and pane should be active on page load
+$addStudentTabClass = 'active';
+$addRepeatTabClass = '';
+$addStudentPaneClass = 'active in';
+$addRepeatPaneClass = '';
+
+if ($active_tab_param === 'addRepeat' || !empty($preselected_student_id)) {
+  $addStudentTabClass = '';
+  $addRepeatTabClass = 'active';
+  $addStudentPaneClass = '';
+  $addRepeatPaneClass = 'active in';
+}
+
+
+// Initialize students array
+$students = [];
+try {
+  // Check if the database connection object exists
+  if (isset($db)) {
+    // Fetch all students to populate the dropdown
+    $stmt = $db->prepare("SELECT id, student_id, name, last_name FROM student ORDER BY name ASC");
+    $stmt->execute();
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+} catch (PDOException $e) {
+  // Display a detailed error message if the query fails
+  die("Database Error: " . $e->getMessage());
+}
+
+/**
+ * Displays a success message if the corresponding URL parameter is set.
+ */
+function display_success_message($type, $message)
+{
+  if (isset($_GET['success']) && $_GET['success'] == $type) {
+    echo '<div class="alert alert-success" style="width: 80%; margin: 10px auto;">
+                  <center><strong><i class="icon-ok"></i> ' . htmlspecialchars($message) . '</strong></center>
+              </div>';
+  }
+}
+?>
 <html>
 
 <head>
-  <title>
-    Model :: Student Information System
-  </title>
-
-  <?php
-  require_once('auth.php');
-  ?>
+  <title>Student Repeat Management System</title>
   <link href="css/bootstrap.css" rel="stylesheet">
-
   <link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
-
   <link rel="stylesheet" href="css/font-awesome.min.css">
   <style type="text/css">
     body {
@@ -22,116 +68,35 @@
     .sidebar-nav {
       padding: 9px 0;
     }
+
+    .nav-tabs {
+      margin-bottom: 20px;
+    }
+
+    /* Card-like design for the forms */
+    .card {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 25px;
+      margin: 15px auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      width: 450px;
+      /* Set a fixed width for the card */
+    }
+
+    .card-body span {
+      display: inline-block;
+      width: 120px;
+      /* Aligns the labels nicely */
+      text-align: right;
+      margin-right: 10px;
+    }
   </style>
   <link href="css/bootstrap-responsive.css" rel="stylesheet">
-
   <link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-  <!--sa poip up-->
-  <script src="jeffartagame.js" type="text/javascript" charset="utf-8"></script>
-  <script src="js/application.js" type="text/javascript" charset="utf-8"></script>
   <link href="src/facebox.css" media="screen" rel="stylesheet" type="text/css" />
-  <script src="lib/jquery.js" type="text/javascript"></script>
-  <script src="src/facebox.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    jQuery(document).ready(function($) {
-      $('a[rel*=facebox]').facebox({
-        loadingImage: 'src/loading.gif',
-        closeImage: 'src/closelabel.png'
-      })
-    })
-  </script>
 </head>
-<?php
-function createRandomPassword()
-{
-  $chars = "003232303232023232023456789";
-  srand((float)microtime() * 1000000);
-  $i = 0;
-  $pass = '';
-  while ($i <= 7) {
-
-    $num = rand() % 33;
-
-    $tmp = substr($chars, $num, 1);
-
-    $pass = $pass . $tmp;
-
-    $i++;
-  }
-  return $pass;
-}
-$finalcode = 'RS-' . createRandomPassword();
-?>
-
-<script>
-  function sum() {
-    var txtFirstNumberValue = document.getElementById('txt1').value;
-    var txtSecondNumberValue = document.getElementById('txt2').value;
-    var result = parseInt(txtFirstNumberValue) - parseInt(txtSecondNumberValue);
-    if (!isNaN(result)) {
-      document.getElementById('txt3').value = result;
-
-    }
-
-    var txtFirstNumberValue = document.getElementById('txt11').value;
-    var result = parseInt(txtFirstNumberValue);
-    if (!isNaN(result)) {
-      document.getElementById('txt22').value = result;
-    }
-
-    var txtFirstNumberValue = document.getElementById('txt11').value;
-    var txtSecondNumberValue = document.getElementById('txt33').value;
-    var result = parseInt(txtFirstNumberValue) + parseInt(txtSecondNumberValue);
-    if (!isNaN(result)) {
-      document.getElementById('txt55').value = result;
-
-    }
-
-    var txtFirstNumberValue = document.getElementById('txt4').value;
-    var result = parseInt(txtFirstNumberValue);
-    if (!isNaN(result)) {
-      document.getElementById('txt5').value = result;
-    }
-
-  }
-</script>
-
-
-<script language="javascript" type="text/javascript">
-  /* Visit http://www.yaldex.com/ for full source code
-and get more free JavaScript, CSS and DHTML scripts! */
-  <!-- Begin
-  var timerID = null;
-  var timerRunning = false;
-
-  function stopclock() {
-    if (timerRunning)
-      clearTimeout(timerID);
-    timerRunning = false;
-  }
-
-  function showtime() {
-    var now = new Date();
-    var hours = now.getHours();
-    var minutes = now.getMinutes();
-    var seconds = now.getSeconds()
-    var timeValue = "" + ((hours > 12) ? hours - 12 : hours)
-    if (timeValue == "0") timeValue = 12;
-    timeValue += ((minutes < 10) ? ":0" : ":") + minutes
-    timeValue += ((seconds < 10) ? ":0" : ":") + seconds
-    timeValue += (hours >= 12) ? " P.M." : " A.M."
-    document.clock.face.value = timeValue;
-    timerID = setTimeout("showtime()", 1000);
-    timerRunning = true;
-  }
-
-  function startclock() {
-    stopclock();
-    showtime();
-  }
-  window.onload = startclock;
-  // End -->
-</SCRIPT>
 
 <body>
   <?php include('navfixed.php'); ?>
@@ -142,114 +107,125 @@ and get more free JavaScript, CSS and DHTML scripts! */
           <ul class="nav nav-list">
             <li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
             <li><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a> </li>
-            <li class="active"><a href="addstudent.php"><i class="icon-user icon-2x"></i>Add Student</a> </li>
-
-            <br><br>
-            <li>
-              <div class="hero-unit-clock">
-
-                <form name="clock">
-                  <font color="white">Time: <br></font>&nbsp;<input style="width:150px;" type="submit" class="trans" name="face" value="">
-                </form>
-              </div>
-            </li>
-
+            <li class="active"><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
           </ul>
         </div><!--/.well -->
       </div><!--/span-->
       <div class="span10">
         <div class="contentheader">
-          <i class="icon-table"></i> Add Student
+          <i class="icon-table"></i> Student and Repeat Management
         </div>
         <ul class="breadcrumb">
           <li><a href="index.php">Dashboard</a></li> /
-          <li class="active">Add Student</li>
+          <li class="active">Add Student & Repeats</li>
         </ul>
 
+        <a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
 
-        <div style="margin-top: -19px; margin-bottom: 21px;">
-          <a href="index.php"><button class="btn btn-default btn-large" style="float: left;"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
-          <form action="savestudent.php" method="post" enctype="multipart/form-data">
-            <center>
-              <h4><i class="icon-edit icon-large"></i> Add New Student </h4>
-            </center>
-            <hr>
-            <center>
-              <div id="ac">
-                <input type="hidden" name="memi" value="<?php echo $id; ?>" />
-                <span>Student ID: </span><input type="text" style="width:265px; height:30px;" name="student_id" Required /><br>
-                <span>First Name : </span><input type="text" style="width:265px; height:30px;" name="name" Required /><br>
-                <span>Last Name : </span><input type="text" style="width:265px; height:30px;" name="last_name" Required /><br>
-                <span>Gender: </span>
-                <select name="gender" style="width:265px; height:30px; margin-left:-5px;">
-                  <option>Female</option>
-                  <option>Male</option>
-                </select><br>
-                <span>D.O.B: </span><input type="date" style="width:265px; height:30px;" name="dob" required /><br>
-                <span>Admission Year </span><select name="yoa" style="width:265px; height:30px; margin-left:-5px;">
-                  <option>2009</option>
-                  <option>2010</option>
-                  <option>2011</option>
-                  <option>2012</option>
-                  <option>2013</option>
-                  <option>2014</option>
-                  <option>2015</option>
-                  <option>2016</option>
-                  <option>2017</option>
-                </select><br>
-                <span>Parent Phone: </span><input type="text" style="width:265px; height:30px;" name="parent" required />
-                <br>
-                <span>Report : </span><textarea style="width:265px; height:50px;" name="report"></textarea><br>
-                <span>Passport:</span><input type="file" name="file" id="file" required><br><br>
-                <div>
+        <div style="clear:both; margin-bottom: 10px;"></div>
 
-                  <button class="btn btn-success btn-block btn-large" style="width:267px;"><i class="icon icon-save icon-large"></i> Save Student</button>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="myTab">
+          <li class="<?php echo $addStudentTabClass; ?>"><a href="#addStudent" data-toggle="tab">Add Student</a></li>
+          <li class="<?php echo $addRepeatTabClass; ?>"><a href="#addRepeat" data-toggle="tab">Add Repeat Record</a></li>
+        </ul>
+
+        <!-- Tab Panes -->
+        <div class="tab-content">
+          <!-- Add Student Tab -->
+          <div class="tab-pane <?php echo $addStudentPaneClass; ?>" id="addStudent">
+            <div class="card">
+              <form action="savestudent.php" method="post">
+                <center>
+                  <h4><i class="icon-edit icon-large"></i> Add New Student</h4>
+                </center>
+                <?php display_success_message('studentadded', 'Student saved successfully!'); ?>
+                <hr>
+                <div class="card-body">
+                  <span>Student ID: </span><input type="text" style="width:265px; height:30px;" name="student_id" placeholder="Student ID" required /><br>
+                  <span>First Name: </span><input type="text" style="width:265px; height:30px;" name="name" placeholder="First Name" required /><br>
+                  <span>Last Name: </span><input type="text" style="width:265px; height:30px;" name="last_name" placeholder="Last Name" required /><br>
+                  <span>Bachelor of: </span><input type="text" style="width:265px; height:30px;" name="course" placeholder="e.g., Information Technology" /><br>
+                  <span>Gender: </span><select name="gender" style="width:280px; height:40px;">
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select><br>
+                  <span>Birth Date: </span><input type="date" style="width:265px; height:30px;" name="bdate" /><br>
+                  <span>Address: </span><input type="text" style="width:265px; height:30px;" name="address" placeholder="Address" /><br>
+                  <span>Contact: </span><input type="text" style="width:265px; height:30px;" name="contact" placeholder="Contact" /><br><br>
+                  <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Student</button></div>
                 </div>
-              </div>
-          </form>
-          </center>
+              </form>
+            </div>
+          </div>
 
-          <script src="js/jquery.js"></script>
-          <script type="text/javascript">
-            $(function() {
+          <!-- Add Repeat Record Tab -->
+          <div class="tab-pane <?php echo $addRepeatPaneClass; ?>" id="addRepeat">
+            <div class="card">
+              <form action="add_repeat_record.php" method="post">
+                <center>
+                  <h4><i class="icon-plus-sign icon-large"></i> Add Failed Subject Record</h4>
+                </center>
+                <?php display_success_message('recordadded', 'Repeat record saved successfully!'); ?>
+                <hr>
+                <div class="card-body">
+                  <span>Student: </span>
+                  <select name="student_id_fk" style="width:280px; height:40px;" required>
+                    <option value="">Select a student</option>
+                    <?php foreach ($students as $student) : ?>
+                      <option value="<?php echo htmlspecialchars($student['id']); ?>" <?php if ($preselected_student_id == $student['id']) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name'] . ' (' . $student['student_id'] . ')'); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select><br>
+                  <span>Subject Name: </span><input type="text" style="width:265px; height:30px;" name="subject_name" placeholder="e.g., Introduction to Programming" required /><br>
+                  <span>Year of Failure: </span>
+                  <select name="failed_year" style="width:280px; height:40px;" required>
+                    <?php for ($i = 1; $i <= 6; $i++): ?><option><?php echo $i; ?></option><?php endfor; ?>
+                  </select><br>
+                  <span>Academic Year: </span><input type="text" name="academic_year" style="width:265px; height:30px;" placeholder="e.g., 2023-2024" required /><br>
+                  <span>Semester: </span>
+                  <select name="semester" style="width:280px; height:40px;">
+                    <option>1</option>
+                    <option>2</option>
+                  </select><br>
+                  <span>Subject Passed: </span>
+                  <input type="hidden" name="passed" value="0"> <!-- Fallback for unchecked box -->
+                  <input type="checkbox" name="passed" value="1" style="width:30px; height:30px;" checked><br><br>
+                  <span>Notes (Optional): </span><textarea style="width:265px; height:50px;" name="notes"></textarea><br><br>
+                  <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Add Record</button></div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <?php include('footer.php'); ?>
 
-              $(".delbutton").click(function() {
+  <script src="lib/jquery.js"></script>
+  <script src="src/facebox.js"></script>
+  <script src="js/bootstrap.min.js"></script>
 
-                //Save the link in a variable called element
-                var element = $(this);
+  <script>
+    jQuery(document).ready(function($) {
+      $('a[rel*=facebox]').facebox({
+        loadingImage: 'src/loading.gif',
+        closeImage: 'src/closelabel.png'
+      });
 
-                //Find the id of the link that was clicked
-                var del_id = element.attr("id");
+      // This JS is now a fallback, as PHP handles the initial active state.
+      const urlParams = new URLSearchParams(window.location.search);
+      const successParam = urlParams.get('success');
 
-                //Built a url to send
-                var info = 'id=' + del_id;
-                if (confirm("Sure you want to delete this Student? There is NO undo!")) {
-
-                  $.ajax({
-                    type: "GET",
-                    url: "deletestudent.php",
-                    data: info,
-                    success: function() {
-
-                    }
-                  });
-                  $(this).parents(".record").animate({
-                      backgroundColor: "#fbc7c7"
-                    }, "fast")
-                    .animate({
-                      opacity: "hide"
-                    }, "slow");
-
-                }
-
-                return false;
-
-              });
-
-            });
-          </script>
+      if (successParam === 'recordadded') {
+        $('#myTab a[href="#addRepeat"]').tab('show');
+      }
+    });
+  </script>
 </body>
-<?php include('footer.php'); ?>
 
 </html>

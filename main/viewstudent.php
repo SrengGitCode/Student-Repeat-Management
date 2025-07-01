@@ -1,291 +1,221 @@
-<html>
-<head>
-<title>
-Model :: Student Information System
-</title>
-
-<?php 
-require_once('auth.php');
-?>
- <link href="css/bootstrap.css" rel="stylesheet">
-
-    <link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
-  
-  <link rel="stylesheet" href="css/font-awesome.min.css">
-    <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
-      .sidebar-nav {
-        padding: 9px 0;
-      }
-    </style>
-    <link href="css/bootstrap-responsive.css" rel="stylesheet">
-
-<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-<!--sa poip up-->
-<script src="jeffartagame.js" type="text/javascript" charset="utf-8"></script>
-<script src="js/application.js" type="text/javascript" charset="utf-8"></script>
-<link href="src/facebox.css" media="screen" rel="stylesheet" type="text/css" />
-<script src="lib/jquery.js" type="text/javascript"></script>
-<script src="src/facebox.js" type="text/javascript"></script>
-<script type="text/javascript">
-  jQuery(document).ready(function($) {
-    $('a[rel*=facebox]').facebox({
-      loadingImage : 'src/loading.gif',
-      closeImage   : 'src/closelabel.png'
-    })
-  })
-</script>
-</head>
 <?php
-function createRandomPassword() {
-	$chars = "003232303232023232023456789";
-	srand((double)microtime()*1000000);
-	$i = 0;
-	$pass = '' ;
-	while ($i <= 7) {
+// Enable error reporting to debug blank page issues
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-		$num = rand() % 33;
+// Authenticate and connect to the database
+require_once('auth.php');
+include('../connect.php');
 
-		$tmp = substr($chars, $num, 1);
+// Initialize arrays for student data and their repeat records
+$student = null;
+$repeat_records = [];
 
-		$pass = $pass . $tmp;
+// Get the student ID from the URL and validate it
+$student_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
-		$i++;
+if ($student_id) {
+	try {
+		if (isset($db)) {
+			// Fetch the student's main information
+			$stmt_student = $db->prepare("SELECT * FROM student WHERE id = :userid");
+			$stmt_student->bindParam(':userid', $student_id);
+			$stmt_student->execute();
+			$student = $stmt_student->fetch(PDO::FETCH_ASSOC);
 
+			// Fetch all associated repeat records for that student
+			$stmt_repeats = $db->prepare("SELECT * FROM repeat_records WHERE student_id_fk = :userid ORDER BY academic_year DESC, semester DESC");
+			$stmt_repeats->bindParam(':userid', $student_id);
+			$stmt_repeats->execute();
+			$repeat_records = $stmt_repeats->fetchAll(PDO::FETCH_ASSOC);
+		}
+	} catch (PDOException $e) {
+		// Display a detailed error message if the query fails
+		die("Database Error: " . $e->getMessage());
 	}
-	return $pass;
 }
-$finalcode='RS-'.createRandomPassword();
+
+// If no student is found with that ID, handle it gracefully
+if (!$student) {
+	die("Error: Student not found.");
+}
 ?>
+<html>
 
-<script>
-function sum() {
-            var txtFirstNumberValue = document.getElementById('txt1').value;
-            var txtSecondNumberValue = document.getElementById('txt2').value;
-            var result = parseInt(txtFirstNumberValue) - parseInt(txtSecondNumberValue);
-            if (!isNaN(result)) {
-                document.getElementById('txt3').value = result;
-				
-            }
-			
-			 var txtFirstNumberValue = document.getElementById('txt11').value;
-            var result = parseInt(txtFirstNumberValue);
-            if (!isNaN(result)) {
-                document.getElementById('txt22').value = result;				
-            }
-			
-			 var txtFirstNumberValue = document.getElementById('txt11').value;
-            var txtSecondNumberValue = document.getElementById('txt33').value;
-            var result = parseInt(txtFirstNumberValue) + parseInt(txtSecondNumberValue);
-            if (!isNaN(result)) {
-                document.getElementById('txt55').value = result;
-				
-            }
-			
-			 var txtFirstNumberValue = document.getElementById('txt4').value;
-			 var result = parseInt(txtFirstNumberValue);
-            if (!isNaN(result)) {
-                document.getElementById('txt5').value = result;
-				}
-			
-        }
-</script>
+<head>
+	<title>View Student Details</title>
+	<link href="css/bootstrap.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<style type="text/css">
+		body {
+			padding-top: 60px;
+			padding-bottom: 40px;
+		}
 
+		.sidebar-nav {
+			padding: 9px 0;
+		}
 
- <script language="javascript" type="text/javascript">
-/* Visit http://www.yaldex.com/ for full source code
-and get more free JavaScript, CSS and DHTML scripts! */
-<!-- Begin
-var timerID = null;
-var timerRunning = false;
-function stopclock (){
-if(timerRunning)
-clearTimeout(timerID);
-timerRunning = false;
-}
-function showtime () {
-var now = new Date();
-var hours = now.getHours();
-var minutes = now.getMinutes();
-var seconds = now.getSeconds()
-var timeValue = "" + ((hours >12) ? hours -12 :hours)
-if (timeValue == "0") timeValue = 12;
-timeValue += ((minutes < 10) ? ":0" : ":") + minutes
-timeValue += ((seconds < 10) ? ":0" : ":") + seconds
-timeValue += (hours >= 12) ? " P.M." : " A.M."
-document.clock.face.value = timeValue;
-timerID = setTimeout("showtime()",1000);
-timerRunning = true;
-}
-function startclock() {
-stopclock();
-showtime();
-}
-window.onload=startclock;
-// End -->
-</SCRIPT>	
+		/* Card-like design for information blocks */
+		.info-card {
+			background-color: #ffffff;
+			border: 1px solid #e0e0e0;
+			border-radius: 8px;
+			padding: 25px;
+			margin: 20px auto;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+		}
+
+		.card-header {
+			overflow: hidden;
+			/* Clearfix for floated elements */
+			border-bottom: 1px solid #eee;
+			padding-bottom: 10px;
+			margin-bottom: 15px;
+		}
+
+		.card-header h4 {
+			margin-top: 0;
+			margin-bottom: 0;
+			float: left;
+		}
+
+		.student-details-table td {
+			padding: 8px;
+			border: none;
+		}
+
+		.student-details-table tr td:first-child {
+			font-weight: bold;
+			text-align: right;
+			width: 150px;
+		}
+
+		.action-btn {
+			width: 50px;
+			margin-bottom: 5px;
+		}
+	</style>
+	<link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
+</head>
 
 <body>
-<?php include('navfixed.php');?>
-<div class="container-fluid">
-      <div class="row-fluid">
-	<div class="span2">
-          <div class="well sidebar-nav">
-              <ul class="nav nav-list">
-              <li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li> 
-			<li><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a>  </li>
-			<li><a href="addstudent.php"><i class="icon-user icon-2x"></i>Add Student</a>     </li>
+	<?php include('navfixed.php'); ?>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span2">
+				<div class="well sidebar-nav">
+					<ul class="nav nav-list">
+						<li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
+						<li class="active"><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a> </li>
+						<li><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
+					</ul>
+				</div><!--/.well -->
+			</div><!--/span-->
+			<div class="span10">
+				<div class="contentheader">
+					<i class="icon-user"></i> Student Details
+				</div>
+				<ul class="breadcrumb">
+					<li><a href="index.php">Dashboard</a></li> /
+					<li><a href="students.php">Manage Students</a></li> /
+					<li class="active">View Student</li>
+				</ul>
 
-			<br><br>	
-			<li>
-			 <div class="hero-unit-clock">
-		
-			<form name="clock">
-			<font color="white">Time: <br></font>&nbsp;<input style="width:150px;" type="submit" class="trans" name="face" value="">
-			</form>
-			  </div>
-			</li>
-				
-				</ul>             
-          </div><!--/.well -->
-        </div><!--/span-->
-	<div class="span10">
-	<div class="contentheader">
-			<i class="icon-table"></i> Students
-			</div>
-			<ul class="breadcrumb">
-			<li><a href="index.php">Dashboard</a></li> /
-			<li class="active">Students</li>
-			</ul>
+				<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
+				<div style="clear:both;"></div>
 
+				<!-- Student Information Card -->
+				<div class="info-card">
+					<div class="card-header">
+						<h4><i class="icon-edit icon-large"></i> Student Information</h4>
+					</div>
+					<table class="student-details-table">
+						<tr>
+							<td>Student ID:</td>
+							<td><?php echo htmlspecialchars($student['student_id']); ?></td>
+						</tr>
+						<tr>
+							<td>Full Name:</td>
+							<td><?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name']); ?></td>
+						</tr>
+						<tr>
+							<td>Bachelor of:</td>
+							<td><?php echo htmlspecialchars($student['course']); ?></td>
+						</tr>
+						<tr>
+							<td>Gender:</td>
+							<td><?php echo htmlspecialchars($student['gender']); ?></td>
+						</tr>
+						<tr>
+							<td>Date of Birth:</td>
+							<td><?php echo htmlspecialchars($student['bdate']); ?></td>
+						</tr>
+						<tr>
+							<td>Address:</td>
+							<td><?php echo htmlspecialchars($student['address']); ?></td>
+						</tr>
+						<tr>
+							<td>Contact:</td>
+							<td><?php echo "0";
+								echo htmlspecialchars($student['contact']); ?></td>
+						</tr>
+					</table>
+				</div>
 
-<div style="margin-top: -19px; margin-bottom: 21px;">
-<a  href="index.php"><button class="btn btn-default btn-large" style="float: left;"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
+				<!-- Repeat Records Card -->
+				<div class="info-card">
+					<div class="card-header">
+						<h4><i class="icon-list-alt icon-large"></i> Failed / Repeat Subject Records</h4>
+						<a href="addstudent.php?student_id=<?php echo $student_id; ?>&tab=addRepeat" style="float: right;" class="btn btn-primary"><i class="icon-plus"></i> Add Subject Record</a>
+					</div>
+					<?php if (count($repeat_records) > 0): ?>
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Subject Name</th>
+									<th>Academic Year</th>
+									<th>Year of Failure</th>
+									<th>Semester</th>
+									<th>Status</th>
+									<th>Notes</th>
+									<th style="text-align:center;">Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ($repeat_records as $record): ?>
+									<tr>
+										<td><?php echo htmlspecialchars($record['subject_name']); ?></td>
+										<td><?php echo htmlspecialchars($record['academic_year']); ?></td>
+										<td><?php echo htmlspecialchars($record['failed_year']); ?></td>
+										<td><?php echo htmlspecialchars($record['semester']); ?></td>
+										<td><?php echo $record['passed'] ? '<span class="label label-success">Passed</span>' : '<span class="label label-important">Failed</span>'; ?></td>
+										<td><?php echo htmlspecialchars($record['notes']); ?></td>
+										<td style="text-align:center;">
+											<a href="edit_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-warning btn-mini action-btn"><i class="icon-edit"></i> Edit</a>
+											<a href="delete_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-danger btn-mini action-btn" onclick="return confirm('Are you sure you want to delete this record?');"><i class="icon-trash"></i> Delete</a>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					<?php else: ?>
+						<div class="alert alert-info" style="text-align: center;">
+							No Repeat Records Found for this student.
+						</div>
+					<?php endif; ?>
+				</div>
+			</div><!--/span-->
+		</div><!--/row-->
+	</div><!--/.fluid-container-->
 
-<?php
-	include('../connect.php');
-	$id=$_GET['id'];
-	$result = $db->prepare("SELECT * FROM student WHERE id= :userid");
-	$result->bindParam(':userid', $id);
-	$result->execute();
-	for($i=0; $row = $result->fetch(); $i++){
-?>
-<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-<center><h4><i class="icon-edit icon-large"></i> Student Information</h4></center>
-<hr>
-<center><img src="../uploads/<?php echo $row['file'];?>" class="roundimage2"  alt=""/>
-<br><br>
+	<?php include('footer.php'); ?>
 
-<table>
-<tr>
-<td> Student ID. : </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['student_id']; ?></td>
-</tr>
-<tr>
-<td> Full Name :  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['name']; ?> <?php echo $row['last_name']; ?></td>
-</tr>
-<tr>
-<td> Gender:  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['gender']; ?></td>
-</tr>
-<tr>
-<td> D.O.B:  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['dob']; ?></td>
-</tr>
-<tr>
-<td> Admission Year :  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['yoa']; ?></td>
-</tr>
-<tr>
-<td> Parent Phone:  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['parent']; ?></td>
-</tr>
-<tr>
-<td> Report :  </td>
-<td style="padding: 10px;
-				border-top: 1px solid #fafafa;
-				background-color: #f4f4f4;
-				text-align: center;
-				color: #7d7d7d;"> <?php echo $row['report']; ?></td>
-</tr>
-
-
-</table>
-<br>
-			
-</center>
-
-</div>
-<?php
-}
-?>
-
-<script src="js/jquery.js"></script>
-  <script type="text/javascript">
-$(function() {
-
-
-$(".delbutton").click(function(){
-
-//Save the link in a variable called element
-var element = $(this);
-
-//Find the id of the link that was clicked
-var del_id = element.attr("id");
-
-//Built a url to send
-var info = 'id=' + del_id;
- if(confirm("Sure you want to delete this Student? There is NO undo!"))
-		  {
-
- $.ajax({
-   type: "GET",
-   url: "deletestudent.php",
-   data: info,
-   success: function(){
-   
-   }
- });
-         $(this).parents(".record").animate({ backgroundColor: "#fbc7c7" }, "fast")
-		.animate({ opacity: "hide" }, "slow");
-
- }
-
-return false;
-
-});
-
-});
-</script>
+	<script src="lib/jquery.js"></script>
+	<script src="src/facebox.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 </body>
-<?php include('footer.php');?>
 
 </html>

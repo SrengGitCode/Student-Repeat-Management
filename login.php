@@ -56,7 +56,7 @@ if ($result) {
 		$member = mysqli_fetch_assoc($result);
 		$_SESSION['SESS_MEMBER_ID'] = $member['id'];
 		$_SESSION['SESS_FIRST_NAME'] = $member['name'];
-		$_SESSION['SESS_LAST_NAME'] = $member['position'];
+		$_SESSION['SESS_LAST_NAME'] = $member['username'];
 		session_write_close();
 		header("location: main/index.php");
 		exit();
