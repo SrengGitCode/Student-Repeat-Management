@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `student` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 
--- --------------------------------------------------------
+-- -------------------------------------------------------- 
 
 --
 -- Table structure for table `repeat_records`

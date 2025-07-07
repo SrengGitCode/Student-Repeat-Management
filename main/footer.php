@@ -2,9 +2,9 @@
 <link href="vendors/chosen.min.css" rel="stylesheet" media="screen">
 
 <!-- JS Libraries -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Ensure jQuery is loaded first -->
+<script src="lib/jquery-3.7.1.min.js"></script> <!-- Ensure jQuery is loaded first -->
 <script src="vendors/chosen.jquery.min.js"></script>
-<script src="vendors/bootstrap-datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.10.0/dist/js/bootstrap-datepicker.min.js"></script>
 
 <!-- Init Scripts -->
 <script>

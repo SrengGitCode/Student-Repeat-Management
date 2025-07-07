@@ -8,7 +8,7 @@ include('../connect.php');
 
 // Initialize counts
 $student_count = 0;
-$repeat_records_count = 0;
+$students_with_fails_count = 0;
 
 try {
 	if (isset($db)) {
@@ -17,10 +17,10 @@ try {
 		$result_students->execute();
 		$student_count = $result_students->fetchColumn();
 
-		// Query to count total repeat records
-		$result_repeats = $db->prepare("SELECT count(*) FROM repeat_records");
-		$result_repeats->execute();
-		$repeat_records_count = $result_repeats->fetchColumn();
+		// Query to count unique students with at least one failed record (passed = 0)
+		$result_fails = $db->prepare("SELECT COUNT(DISTINCT student_id_fk) FROM repeat_records WHERE passed = 0");
+		$result_fails->execute();
+		$students_with_fails_count = $result_fails->fetchColumn();
 	}
 } catch (PDOException $e) {
 	die("Database Error: " . $e->getMessage());
@@ -31,8 +31,6 @@ try {
 
 <head>
 	<title>Student Repeat Management System</title>
-	<?php // include('header.php'); // Assuming you have a header file with CSS links 
-	?>
 	<link href="css/bootstrap.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
@@ -67,6 +65,12 @@ try {
 			color: #fff;
 			transform: translateY(-5px);
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		/* Specific hover color for the 'At-Risk' card */
+		.stat-box.at-risk:hover {
+			background-color: #f89406;
+			/* Orange hover color */
 		}
 
 		.stat-box i {
@@ -140,11 +144,11 @@ try {
 							</a>
 						</div>
 						<div class="span4">
-							<a class="stat-box" href="#">
-								<i class="icon-list-alt icon-4x"></i>
+							<a class="stat-box at-risk" href="students.php?filter=at_risk">
+								<i class="icon-warning-sign icon-4x"></i>
 								<div class="stat-info">
-									<span class="stat-count"><?php echo $repeat_records_count; ?></span>
-									<span class="stat-label">Repeat Records</span>
+									<span class="stat-count"><?php echo $students_with_fails_count; ?></span>
+									<span class="stat-label">Students with Fails</span>
 								</div>
 							</a>
 						</div>
@@ -158,13 +162,6 @@ try {
 	</div><!--/.fluid-container-->
 
 	<?php include('footer.php'); ?>
-
-	<!-- Le javascript
-    ================================================== -->
-	<!-- Placed at the end of the document so the pages load faster -->
-	<script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
-	<script src="js/jquery.js"></script>
-	<script src="js/bootstrap.min.js"></script>
 </body>
 
 </html>

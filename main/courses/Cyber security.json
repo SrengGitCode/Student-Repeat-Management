@@ -1,0 +1,104 @@
+{
+    "degree_title": "Cyber Security",
+    "years": [
+      {
+        "year": 1,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "English for Computer",
+              "Computer Repairs and Maintenance",
+              "Principles of Economics",
+              "Computer Graphic Design I",
+              "C++ Programming I"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Advanced MS Application",
+              "Fundamental Network Security",
+              "C++ Programming II",
+              "Mathematics for Computing",
+              "Computer Networking"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Network Programming I",
+              "Web-Based Development I",
+              "Cyber Security Law",
+              "Operating System",
+              "Network Administrator I"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Network Programming II",
+              "Web Development System II",
+              "Network Administrator II",
+              "Cisco Networking Course I",
+              "Computer Forensics Tools and Security"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 3,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Client / Server Application",
+              "Cisco Networking Course II",
+              "Cloud Computing",
+              "Linux System Administrator I",
+              "Network Security"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Linux System Administrator II",
+              "Cisco Networking Course III",
+              "Ethical Hacking",
+              "Firewall Security",
+              "Cyber Security Operations"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 4,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Ethical in Cyber Security",
+              "Telecom Technology Concepts",
+              "Artificial Intelligence Concepts",
+              "Research Methodology",
+              "Network and Internet Forensics"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Information Security Management",
+              "Management Information System",
+              "Network Project Management",
+              "Bachelor's Thesis"
+            ]
+          }
+        ]
+      }
+    ]
+  }

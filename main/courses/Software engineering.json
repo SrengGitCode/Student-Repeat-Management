@@ -1,0 +1,103 @@
+{
+    "degree_title": "Software Engineering",
+    "years": [
+      {
+        "year": 1,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "English for Computer",
+              "Computer Repairs and Maintenance",
+              "Principles of Economics",
+              "Computer Graphic Design I",
+              "C++ Programming I"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Advanced MS Application",
+              "Web Page Dynamic",
+              "C++ Programming II",
+              "Mathematics for Computing"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Database Management System I",
+              "Web Development II",
+              "C# Programming I",
+              "Data Structure and Algorithms",
+              "Framework Web Page Development"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Client/Server Application",
+              "Professional Web Development System",
+              "C# Programming Language II",
+              "Back-End Development with API",
+              "Network Administrator"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 3,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Oracle Database I",
+              "E-Commerce",
+              "Java Programming I",
+              "Object Oriented Programming I with C#",
+              "System Analysis & Design"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Advanced Oracle Database II",
+              "Mobile App Development I",
+              "Java Programming II",
+              "Object Oriented Programming II with C#",
+              "UX/UI Design"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 4,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Python Programming I",
+              "Mobile App Development II",
+              "Artificial Intelligence Concepts",
+              "Research Methodology",
+              "Cloud Technologies"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Advanced Python Programming II",
+              "Software Project Management",
+              "Management Information System",
+              "Bachelor's Thesis"
+            ]
+          }
+        ]
+      }
+    ]
+  }

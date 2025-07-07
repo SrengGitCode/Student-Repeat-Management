@@ -1,0 +1,104 @@
+{
+    "degree_title": "Computer Graphic Design",
+    "years": [
+      {
+        "year": 1,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "English for Computer",
+              "Computer Repairs and Maintenance",
+              "Principles of Economics",
+              "Computer Graphic Design I",
+              "C++ Programming I"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Advanced MS Application",
+              "Computer Graphic Design II",
+              "Basic Character Animation",
+              "Video Proshow Production",
+              "Web-Based Development I"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 2,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Social Media & Innovation",
+              "Basic Drawing Animation",
+              "Multimedia Studio",
+              "Professional Computer Graphic III",
+              "Digital Studio Photography & Drone"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Drawing for Media",
+              "Web Technologies Design",
+              "Multimedia Studio II",
+              "Multimedia Sound Effect",
+              "Computer Networking"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 3,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Computer Animation 2D Design I",
+              "E-Commerce",
+              "Computer Animation 3D Design I",
+              "Motion Graphics Design",
+              "Digital Marketing"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Computer Animation 2D Design II",
+              "Conceptual Design",
+              "Autodesk 3D Max",
+              "Computer Animation 3D Design II",
+              "UX / UI Design"
+            ]
+          }
+        ]
+      },
+      {
+        "year": 4,
+        "semesters": [
+          {
+            "semester": 1,
+            "courses": [
+              "Interaction Design",
+              "Autodesk Maya",
+              "Sketchup 3D Design",
+              "Research Methodology",
+              "Storyborad Design"
+            ]
+          },
+          {
+            "semester": 2,
+            "courses": [
+              "Cinema 4D",
+              "Creative Advertising",
+              "Multimedia Project Management",
+              "Bachelor's Thesis"
+            ]
+          }
+        ]
+      }
+    ]
+  }

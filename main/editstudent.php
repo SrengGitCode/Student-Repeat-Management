@@ -142,7 +142,7 @@ if (!$student) {
 
 	<?php include('footer.php'); ?>
 
-	<script src="lib/jquery.js"></script>
+	<script src="lib/jquery-3.7.1.min.js"></script>
 	<script src="src/facebox.js"></script>
 	<script src="js/bootstrap.min.js"></script>
 </body>
