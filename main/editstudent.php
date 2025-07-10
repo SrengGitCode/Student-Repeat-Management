@@ -40,6 +40,7 @@ if (!$student) {
 	<link href="css/bootstrap.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/sidebar.css" rel="stylesheet">
 	<style type="text/css">
 		body {
 			padding-top: 60px;
@@ -77,69 +78,69 @@ if (!$student) {
 
 <body>
 	<?php include('navfixed.php'); ?>
-	<div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span2">
-				<div class="well sidebar-nav">
-					<ul class="nav nav-list">
-						<li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
-						<li class="active"><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a></li>
-						<li><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
+	<div class="sidebar-fixed">
+		<?php include('sidebar.php');  ?>
+	</div>
+	<div class="content-main">
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="contentheader">
+						<i class="icon-edit"></i> Edit Student Information
+					</div>
+					<ul class="breadcrumb">
+						<li><a href="index.php">Dashboard</a></li> /
+						<li><a href="students.php">Manage Students</a></li> /
+						<li class="active">Edit Student</li>
 					</ul>
-				</div><!--/.well -->
-			</div><!--/span-->
-			<div class="span10">
-				<div class="contentheader">
-					<i class="icon-edit"></i> Edit Student Information
-				</div>
-				<ul class="breadcrumb">
-					<li><a href="index.php">Dashboard</a></li> /
-					<li><a href="students.php">Manage Students</a></li> /
-					<li class="active">Edit Student</li>
-				</ul>
 
-				<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
-				<div style="clear:both;"></div>
+					<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
+					<div style="clear:both;"></div>
 
-				<div class="card">
-					<form action="saveeditstudent.php" method="post">
-						<center>
-							<h4><i class="icon-edit icon-large"></i> Edit Details</h4>
-						</center>
-						<hr>
-						<div class="card-body">
-							<input type="hidden" name="id" value="<?php echo htmlspecialchars($student['id']); ?>" />
+					<div class="card">
+						<form action="saveeditstudent.php" method="post">
+							<center>
+								<h4><i class="icon-edit icon-large"></i> Edit Details</h4>
+							</center>
+							<hr>
+							<div class="card-body">
+								<input type="hidden" name="id" value="<?php echo htmlspecialchars($student['id']); ?>" />
 
-							<span>Student ID: </span><input type="text" style="width:265px; height:30px;" name="student_id" value="<?php echo htmlspecialchars($student['student_id']); ?>" readonly /><br>
+								<span>Student ID: </span><input type="text" style="width:265px; height:40px;" name="student_id" value="<?php echo htmlspecialchars($student['student_id']); ?>" readonly /><br>
 
-							<span>First Name: </span><input type="text" style="width:265px; height:30px;" name="name" value="<?php echo htmlspecialchars($student['name']); ?>" required /><br>
+								<span>First Name: </span><input type="text" style="width:265px; height:40px;" name="name" value="<?php echo htmlspecialchars($student['name']); ?>" required /><br>
 
-							<span>Last Name: </span><input type="text" style="width:265px; height:30px;" name="last_name" value="<?php echo htmlspecialchars($student['last_name']); ?>" required /><br>
+								<span>Last Name: </span><input type="text" style="width:265px; height:40px;" name="last_name" value="<?php echo htmlspecialchars($student['last_name']); ?>" required /><br>
 
-							<span>Bachelor of: </span><input type="text" style="width:265px; height:30px;" name="course" value="<?php echo htmlspecialchars($student['course']); ?>" /><br>
+								<span>Bachelor of: </span>
+								<select name="course" style="width:280px; height:40px;" required>
+									<option <?php echo ($student['course'] == 'Computer Graphic Design') ? 'selected' : ''; ?>>Computer Graphic Design</option>
+									<option <?php echo ($student['course'] == 'Cyber Security') ? 'selected' : ''; ?>>Cyber Security</option>
+									<option <?php echo ($student['course'] == 'Software Engineering') ? 'selected' : ''; ?>>Software Engineering</option>
+								</select><br>
 
-							<span>Gender: </span>
-							<select name="gender" style="width:280px; height:40px;" required>
-								<option <?php echo ($student['gender'] == 'Male') ? 'selected' : ''; ?>>Male</option>
-								<option <?php echo ($student['gender'] == 'Female') ? 'selected' : ''; ?>>Female</option>
-							</select><br>
+								<span>Gender: </span>
+								<select name="gender" style="width:280px; height:40px;" required>
+									<option <?php echo ($student['gender'] == 'Male') ? 'selected' : ''; ?>>Male</option>
+									<option <?php echo ($student['gender'] == 'Female') ? 'selected' : ''; ?>>Female</option>
+								</select><br>
 
-							<span>Birth Date: </span><input type="date" style="width:265px; height:30px;" name="bdate" value="<?php echo htmlspecialchars($student['bdate']); ?>" /><br>
+								<span>Birth Date: </span><input type="date" style="width:265px; height:40px;" name="bdate" value="<?php echo htmlspecialchars($student['bdate']); ?>" /><br>
 
-							<span>Address: </span><input type="text" style="width:265px; height:30px;" name="address" value="<?php echo htmlspecialchars($student['address']); ?>" /><br>
+								<span>Address: </span><input type="text" style="width:265px; height:40px;" name="address" value="<?php echo htmlspecialchars($student['address']); ?>" /><br>
 
-							<span>Contact: </span><input type="text" style="width:265px; height:30px;" name="contact" value="<?php echo htmlspecialchars($student['contact']); ?>" /><br><br>
+								<span>Contact: </span><input type="text" style="width:265px; height:40px;" name="contact" value="<?php echo htmlspecialchars($student['contact']); ?>" /><br><br>
 
-							<div style="text-align: center;">
-								<button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Changes</button>
+								<div style="text-align: center;">
+									<button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Changes</button>
+								</div>
 							</div>
-						</div>
-					</form>
+						</form>
+					</div>
 				</div>
-			</div><!--/span-->
-		</div><!--/row-->
-	</div><!--/.fluid-container-->
-
+			</div>
+		</div>
+	</div>
 	<?php include('footer.php'); ?>
 
 	<script src="lib/jquery-3.7.1.min.js"></script>

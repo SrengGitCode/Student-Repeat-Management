@@ -50,6 +50,7 @@ if (!$student) {
 	<title>View Student Details</title>
 	<link href="css/bootstrap.css" rel="stylesheet">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/sidebar.css" rel="stylesheet">
 	<style type="text/css">
 		body {
 			padding-top: 60px;
@@ -87,6 +88,7 @@ if (!$student) {
 		}
 
 		.year-card {
+
 			padding: 25px;
 			background-color: #ffffff;
 		}
@@ -128,119 +130,112 @@ if (!$student) {
 
 <body>
 	<?php include('navfixed.php'); ?>
-	<div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span2">
-				<div class="well sidebar-nav">
-					<ul class="nav nav-list">
-						<li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
-						<li class="active"><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a> </li>
-						<li><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
+	<div class="sidebar-fixed">
+		<?php include('sidebar.php');  ?>
+	</div>
+	<div class="content-main">
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="contentheader">
+						<i class="icon-user"></i> Student Details
+					</div>
+					<ul class="breadcrumb">
+						<li><a href="index.php">Dashboard</a></li> /
+						<li><a href="students.php">Manage Students</a></li> /
+						<li class="active">View Student</li>
 					</ul>
-				</div>
-			</div>
-			<div class="span10">
-				<div class="contentheader">
-					<i class="icon-user"></i> Student Details
-				</div>
-				<ul class="breadcrumb">
-					<li><a href="index.php">Dashboard</a></li> /
-					<li><a href="students.php">Manage Students</a></li> /
-					<li class="active">View Student</li>
-				</ul>
 
-				<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
-				<div style="clear:both;"></div>
+					<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
+					<div style="clear:both;"></div>
 
-				<!-- Student Information Card -->
-				<div class="info-card student-info-card" style="border-style: solid;">
-					<div class="card-header">
-						<h4><i class="icon-edit icon-large"></i> Student Information</h4>
-					</div>
-					<table class="student-details-table">
-						<tr>
-							<td>Student ID:</td>
-							<td><?php echo htmlspecialchars($student['student_id']); ?></td>
-						</tr>
-						<tr>
-							<td>Full Name:</td>
-							<td><?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name']); ?></td>
-						</tr>
-						<tr>
-							<td>Bachelor of:</td>
-							<td><?php echo htmlspecialchars($student['course']); ?></td>
-						</tr>
-						<tr>
-							<td>Gender:</td>
-							<td><?php echo htmlspecialchars($student['gender']); ?></td>
-						</tr>
-						<tr>
-							<td>Date of Birth:</td>
-							<td><?php echo htmlspecialchars($student['bdate']); ?></td>
-						</tr>
-						<tr>
-							<td>Address:</td>
-							<td><?php echo htmlspecialchars($student['address']); ?></td>
-						</tr>
-						<tr>
-							<td>Contact:</td>
-							<td><?php echo htmlspecialchars($student['contact']); ?></td>
-						</tr>
-					</table>
-				</div>
-
-				<!-- Master Card for All Repeat Records -->
-				<div class="info-card">
-					<div class="card-header" style="margin-right: 7%; padding: 6px;">
-						<h4><i class="icon-list-alt icon-large"></i> Failed / Repeat Subject Records</h4>
-						<a href="addstudent.php?student_id=<?php echo $student_id; ?>&tab=addRepeat" style="float: right;" class="btn btn-primary"><i class="icon-plus"></i> Add Subject Record</a>
-					</div>
-
-					<?php if (empty($grouped_records)): ?>
-						<div class="alert alert-info" style="text-align: center;">
-							No Repeat Records Found for this student.
+					<div class="info-card student-info-card" style="border-style: solid;">
+						<div class="card-header">
+							<h4><i class="icon-edit icon-large"></i> Student Information</h4>
 						</div>
-					<?php else: ?>
-						<?php foreach ($grouped_records as $year => $semesters): ?>
-							<div class="year-card" style="margin-right: 7%;">
-								<h4 style="color: #0056b3;">Year <?php echo htmlspecialchars($year); ?></h4>
-								<hr>
-								<?php foreach ($semesters as $semester => $records): ?>
-									<div class="semester-card">
-										<h5><i class="icon-book"></i> Semester <?php echo htmlspecialchars($semester); ?></h5>
-										<table class="table table-bordered table-striped" style="margin-top: 10px;">
-											<thead>
-												<tr>
-													<th>Subject Name</th>
-													<th>Academic Year</th>
-													<th>Status</th>
-													<th style="text-align:center;">Actions</th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php foreach ($records as $record): ?>
-													<tr>
-														<td><?php echo htmlspecialchars($record['subject_name']); ?></td>
-														<td><?php echo htmlspecialchars($record['academic_year']); ?></td>
-														<td style="text-align:center;" title="Clickable">
-															<a href="update_status.php?id=<?php echo $record['id']; ?>&status=<?php echo $record['passed'] ? '0' : '1'; ?>&student_id=<?php echo $student_id; ?>"
-																class="btn btn-mini <?php echo $record['passed'] ? 'btn-success' : 'btn-danger'; ?>">
-																<?php echo $record['passed'] ? '<i class="icon-ok"></i> Passed' : '<i class="icon-remove"></i> Failed'; ?>
-															</a>
-														</td>
-														<td style="text-align:center;">
-															<a href="edit_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-warning btn-mini"><i class="icon-edit"></i> Edit</a>
-															<a href="delete_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-danger btn-mini" onclick="return confirm('Are you sure you want to delete this record?');"><i class="icon-trash"></i> Delete</a>
-														</td>
-													</tr>
-												<?php endforeach; ?>
-											</tbody>
-										</table>
-									</div>
-								<?php endforeach; ?>
+						<table class="student-details-table">
+							<tr>
+								<td>Student ID:</td>
+								<td><?php echo htmlspecialchars($student['student_id']); ?></td>
+							</tr>
+							<tr>
+								<td>Full Name:</td>
+								<td><?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name']); ?></td>
+							</tr>
+							<tr>
+								<td>Bachelor of:</td>
+								<td><?php echo htmlspecialchars($student['course']); ?></td>
+							</tr>
+							<tr>
+								<td>Gender:</td>
+								<td><?php echo htmlspecialchars($student['gender']); ?></td>
+							</tr>
+							<tr>
+								<td>Date of Birth:</td>
+								<td><?php echo htmlspecialchars($student['bdate']); ?></td>
+							</tr>
+							<tr>
+								<td>Address:</td>
+								<td><?php echo htmlspecialchars($student['address']); ?></td>
+							</tr>
+							<tr>
+								<td>Contact:</td>
+								<td><?php echo htmlspecialchars($student['contact']); ?></td>
+							</tr>
+						</table>
+					</div>
+
+					<div class="info-card" style="padding: 0% 3% ">
+						<div class="card-header" style="margin-right: 7%; padding: 6px;">
+							<h4><i class="icon-list-alt icon-large"></i> Failed / Repeat Subject Records</h4>
+							<a href="addstudent.php?student_id=<?php echo $student_id; ?>&tab=addRepeat" style="float: right;" class="btn btn-primary"><i class="icon-plus"></i> Add Subject Record</a>
+						</div>
+
+						<?php if (empty($grouped_records)) : ?>
+							<div class="alert alert-info" style="text-align: center;">
+								No Repeat Records Found for this student.
 							</div>
-						<?php endforeach; ?>
-					<?php endif; ?>
+						<?php else : ?>
+							<?php foreach ($grouped_records as $year => $semesters) : ?>
+								<div class="year-card" style="">
+									<h4 style="color: #0056b3;">Year <?php echo htmlspecialchars($year); ?></h4>
+
+									<?php foreach ($semesters as $semester => $records) : ?>
+										<div class="semester-card">
+											<h5><i class="icon-book"></i> Semester <?php echo htmlspecialchars($semester); ?></h5>
+											<table class="table table-bordered table-striped" style="margin-top: 10px;">
+												<thead>
+													<tr>
+														<th>Subject Name</th>
+														<th>Academic Year</th>
+														<th>Status</th>
+														<th style="text-align:center;">Actions</th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php foreach ($records as $record) : ?>
+														<tr>
+															<td><?php echo htmlspecialchars($record['subject_name']); ?></td>
+															<td><?php echo htmlspecialchars($record['academic_year']); ?></td>
+															<td style="text-align:center;" title="Clickable">
+																<a href="update_status.php?id=<?php echo $record['id']; ?>&status=<?php echo $record['passed'] ? '0' : '1'; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-mini <?php echo $record['passed'] ? 'btn-success' : 'btn-danger'; ?>">
+																	<?php echo $record['passed'] ? '<i class="icon-ok"></i> Passed' : '<i class="icon-remove"></i> Failed'; ?>
+																</a>
+															</td>
+															<td style="text-align:center;">
+																<a href="edit_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-warning btn-mini"><i class="icon-edit"></i> Edit</a>
+																<a href="delete_repeat_record.php?id=<?php echo $record['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-danger btn-mini" onclick="return confirm('Are you sure you want to delete this record?');"><i class="icon-trash"></i> Delete</a>
+															</td>
+														</tr>
+													<?php endforeach; ?>
+												</tbody>
+											</table>
+										</div>
+									<?php endforeach; ?>
+								</div>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					</div>
 				</div>
 			</div>
 		</div>

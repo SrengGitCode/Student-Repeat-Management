@@ -1,63 +1,57 @@
-	<?php
-	error_reporting(E_ALL);
-	ini_set('display_errors', 1);
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-	require_once('auth.php');
-	include('../connect.php');
+require_once('auth.php');
+include('../connect.php');
 
-	$filter_mode = $_GET['filter'] ?? '';
-	?>
+$filter_mode = $_GET['filter'] ?? '';
+?>
 
-	<!DOCTYPE html>
-	<html>
+<!DOCTYPE html>
+<html>
 
-	<head>
-		<meta charset="UTF-8">
-		<title>Student Repeat Management System</title>
+<head>
+	<meta charset="UTF-8">
+	<title>Student Repeat Management System</title>
 
-		<!-- Bootstrap -->
-		<link href="css/bootstrap.css" rel="stylesheet">
-		<link href="css/bootstrap-responsive.css" rel="stylesheet">
-		<link href="css/font-awesome.min.css" rel="stylesheet">
-		<link href="css/DT_bootstrap.css" rel="stylesheet">
-		<link href="../style.css" rel="stylesheet">
-		<link href="src/facebox.css" rel="stylesheet">
+	<link href="css/bootstrap.css" rel="stylesheet">
+	<link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<link href="css/font-awesome.min.css" rel="stylesheet">
+	<link href="css/DT_bootstrap.css" rel="stylesheet">
+	<link href="../style.css" rel="stylesheet">
+	<link href="src/facebox.css" rel="stylesheet">
+	<link href="css/sidebar.css" rel="stylesheet">
 
-		<!-- DataTables -->
-		<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
-		<style>
-			body {
-				padding-top: 60px;
-				padding-bottom: 40px;
-			}
+	<style>
+		body {
+			padding-top: 60px;
+			padding-bottom: 40px;
+		}
 
-			.sidebar-nav {
-				padding: 9px 0;
-			}
+		.sidebar-nav {
+			padding: 9px 0;
+		}
 
-			.highlight-row {
-				background-color: #f2dede !important;
-			}
-		</style>
-	</head>
+		.highlight-row {
+			background-color: #f2dede !important;
+		}
+	</style>
+</head>
 
-	<body>
-		<?php include('navfixed.php'); ?>
+<body>
+	<?php include('navfixed.php'); ?>
 
+	<div class="sidebar-fixed">
+		<?php include('sidebar.php'); ?>
+	</div>
+
+	<div class="content-main">
 		<div class="container-fluid">
 			<div class="row-fluid">
-				<div class="span2">
-					<div class="well sidebar-nav">
-						<ul class="nav nav-list">
-							<li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard</a></li>
-							<li class="active"><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a></li>
-							<li><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
-						</ul>
-					</div>
-				</div>
-
-				<div class="span10">
+				<div class="span12">
 					<div class="contentheader">
 						<i class="icon-group"></i> Manage Students
 					</div>
@@ -80,22 +74,20 @@
 						</div>
 					</div>
 
-					<!-- Search & Buttons -->
-					<div class=""
-						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+					<div class="" <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
 
 
 						<div>
 							<a href="addstudent.php" class="btn btn-primary btn-large"><i class="icon icon-plus-sign icon-large"></i> Add Student</a>
-							<?php if ($filter_mode === 'at_risk'): ?>
+							<?php if ($filter_mode === 'at_risk') : ?>
 								<a href="students.php" class="btn btn-info btn-large"><i class="icon-list"></i> Show All Students</a>
-							<?php else: ?>
+							<?php else : ?>
 								<a href="students.php?filter=at_risk" class="btn btn-warning btn-large"><i class="icon-filter"></i> Show Students with Fails (≥ 1)</a>
 							<?php endif; ?>
 						</div>
 					</div>
 
-					<table id="resultTable" class="table table-bordered table-striped table-hover" style="text-align: left;">
+					<table id="resultTable" class="table table-bordered table-hover" style="text-align: left;">
 						<thead>
 							<tr>
 								<th>Student ID</th>
@@ -129,7 +121,7 @@
 
 							while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 								$failed_count = (int)($row['failed_count'] ?? 0);  // Explicitly cast
-								$highlight = ($failed_count >= 3) ? 'class="highlight-row"' : '';
+								$highlight = ($failed_count >= 1) ? 'class="highlight-row"' : '';
 
 							?>
 								<tr <?php echo $highlight; ?>>
@@ -143,7 +135,7 @@
 										</span>
 									</td>
 									<td style="text-align:center;">
-										<a href="viewstudent.php?id=<?php echo $row['id']; ?>" class="btn btn-success btn-mini"><i class="icon-search"></i> View</a>
+										<a href="viewstudent.php?id=<?php echo $row['id']; ?>" class="btn btn-success btn-mini"><i class="icon-search"></i> Subject</a>
 										<a href="editstudent.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-mini"><i class="icon-edit"></i> Edit</a>
 										<a href="#" class="delbutton btn btn-danger btn-mini" id="<?php echo $row['id']; ?>"><i class="icon-trash"></i> Delete</a>
 									</td>
@@ -159,7 +151,6 @@
 
 		<?php include('footer.php'); ?>
 
-		<!-- JS Dependencies -->
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
@@ -207,6 +198,6 @@
 				});
 			});
 		</script>
-	</body>
+</body>
 
-	</html>
+</html>

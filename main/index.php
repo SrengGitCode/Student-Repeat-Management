@@ -32,18 +32,11 @@ try {
 <head>
 	<title>Student Repeat Management System</title>
 	<link href="css/bootstrap.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
+	<link href="css/sidebar.css" rel="stylesheet"> <!-- Link to the new custom CSS -->
 	<style type="text/css">
-		body {
-			padding-top: 60px;
-			padding-bottom: 40px;
-		}
-
-		.sidebar-nav {
-			padding: 9px 0;
-		}
-
 		/* Redesigned Stat Box Styles */
 		.stat-box {
 			display: block;
@@ -61,16 +54,13 @@ try {
 
 		.stat-box:hover {
 			background-color: #51A351;
-			/* Greenish hover color */
 			color: #fff;
 			transform: translateY(-5px);
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 		}
 
-		/* Specific hover color for the 'At-Risk' card */
 		.stat-box.at-risk:hover {
 			background-color: #f89406;
-			/* Orange hover color */
 		}
 
 		.stat-box i {
@@ -97,70 +87,63 @@ try {
 			letter-spacing: 1px;
 		}
 	</style>
-	<link href="css/bootstrap-responsive.css" rel="stylesheet">
-	<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
 	<?php include('navfixed.php'); ?>
 
-	<div class="container-fluid">
-		<div class="row-fluid">
-			<div class="span2">
-				<div class="well sidebar-nav">
-					<ul class="nav nav-list">
-						<li class="active"><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
-						<li><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a> </li>
-						<li><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
-					</ul>
-				</div><!--/.well -->
-			</div><!--/span-->
-			<div class="span10">
-				<div class="contentheader">
-					<i class="icon-dashboard"></i> Dashboard
-				</div>
-				<ul class="breadcrumb">
-					<li class="active">Dashboard</li>
-				</ul>
+	<!-- New Responsive Layout Structure -->
+	<div class="sidebar-fixed">
+		<?php include('sidebar.php'); ?>
+	</div>
 
-				<div id="main-stats">
-					<div class="row-fluid">
-						<div class="span4">
-							<a class="stat-box" href="addstudent.php">
-								<i class="icon-plus-sign icon-4x"></i>
-								<div class="stat-info">
-									<span class="stat-count" style="font-size: 22px; padding-top: 6px;">Add New</span>
-									<span class="stat-label">Student or Record</span>
-								</div>
-							</a>
-						</div>
-						<div class="span4">
-							<a class="stat-box" href="students.php">
-								<i class="icon-group icon-4x"></i>
-								<div class="stat-info">
-									<span class="stat-count"><?php echo $student_count; ?></span>
-									<span class="stat-label">Total Students</span>
-								</div>
-							</a>
-						</div>
-						<div class="span4">
-							<a class="stat-box at-risk" href="students.php?filter=at_risk">
-								<i class="icon-warning-sign icon-4x"></i>
-								<div class="stat-info">
-									<span class="stat-count"><?php echo $students_with_fails_count; ?></span>
-									<span class="stat-label">Students with Fails</span>
-								</div>
-							</a>
-						</div>
-
+	<div class="content-main">
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="contentheader">
+						<i class="icon-dashboard"></i> Dashboard
 					</div>
+					<ul class="breadcrumb">
+						<li class="active">Dashboard</li>
+					</ul>
+
+					<div id="main-stats">
+						<div class="row-fluid">
+							<div class="span4">
+								<a class="stat-box" href="students.php">
+									<i class="icon-group icon-4x"></i>
+									<div class="stat-info">
+										<span class="stat-count"><?php echo $student_count; ?></span>
+										<span class="stat-label">Total Students</span>
+									</div>
+								</a>
+							</div>
+							<div class="span4">
+								<a class="stat-box at-risk" href="students.php?filter=at_risk">
+									<i class="icon-warning-sign icon-4x"></i>
+									<div class="stat-info">
+										<span class="stat-count"><?php echo $students_with_fails_count; ?></span>
+										<span class="stat-label">Students with Fails</span>
+									</div>
+								</a>
+							</div>
+							<div class="span4">
+								<a class="stat-box" href="addstudent.php">
+									<i class="icon-plus-sign icon-4x"></i>
+									<div class="stat-info">
+										<span class="stat-count" style="font-size: 22px; padding-top: 6px;">Add New</span>
+										<span class="stat-label">Student or Record</span>
+									</div>
+								</a>
+							</div>
+						</div>
+					</div>
+					<div class="clearfix"></div>
 				</div>
-
-				<div class="clearfix"></div>
-			</div><!--/span-->
-		</div><!--/row-->
-	</div><!--/.fluid-container-->
-
+			</div>
+		</div>
+	</div>
 	<?php include('footer.php'); ?>
 </body>
 

@@ -1,0 +1,49 @@
+/* Custom styles for a fixed, full-height sidebar */
+
+.sidebar-fixed {
+    position: fixed;
+    top: 40px;
+    /* Height of the top navbar */
+    left: 0;
+    bottom: 0;
+    width: 220px;
+    /* A fixed width for the sidebar */
+    background-color: #4d2e78;
+    /* Matching the purple color from your screenshot */
+    z-index: 1000;
+    overflow-y: auto;
+    /* Add scroll for smaller screens */
+}
+
+.sidebar-fixed .well {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 10px;
+    height: 100%;
+}
+
+/* This is the crucial rule: it pushes the main content to the right */
+.content-main {
+    margin-left: 220px;
+    /* This MUST match the width of .sidebar-fixed */
+}
+
+/* Optional: Improve link colors for better visibility on the purple background */
+.sidebar-fixed .nav-list>li>a {
+    color: #dcdcdc;
+    text-shadow: none;
+    padding: 10px 15px;
+}
+
+.sidebar-fixed .nav-list>.active>a,
+.sidebar-fixed .nav-list>.active>a:hover {
+    background-color: #3a225a;
+    color: #ffffff;
+}
+
+.sidebar-fixed .nav-list>li>a:hover {
+    background-color: #5e3a94;
+    color: #ffffff;
+}

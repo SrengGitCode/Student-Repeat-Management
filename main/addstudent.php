@@ -62,6 +62,7 @@ function display_success_message($type, $message)
   <link href="css/bootstrap.css" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
   <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link href="css/sidebar.css" rel="stylesheet">
   <style type="text/css">
     body {
       padding-top: 60px;
@@ -96,111 +97,108 @@ function display_success_message($type, $message)
   <link href="css/bootstrap-responsive.css" rel="stylesheet">
   <link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="src/facebox.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/sidebar.css" rel="stylesheet">
 </head>
 
 <body>
   <?php include('navfixed.php'); ?>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span2">
-        <div class="well sidebar-nav">
-          <ul class="nav nav-list">
-            <li><a href="index.php"><i class="icon-dashboard icon-2x"></i> Dashboard </a></li>
-            <li><a href="students.php"><i class="icon-group icon-2x"></i>Manage Students</a> </li>
-            <li class="active"><a href="addstudent.php"><i class="icon-user-md icon-2x"></i>Add Student & Repeats</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="span10">
-        <div class="contentheader">
-          <i class="icon-table"></i> Student and Repeat Management
-        </div>
-        <ul class="breadcrumb">
-          <li><a href="index.php">Dashboard</a></li> /
-          <li class="active">Add Student & Repeats</li>
-        </ul>
-
-        <a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
-        <div style="clear:both; margin-bottom: 10px;"></div>
-
-        <ul class="nav nav-tabs" id="myTab">
-          <li class="<?php echo $addStudentTabClass; ?>"><a href="#addStudent" data-toggle="tab">Add Student</a></li>
-          <li class="<?php echo $addRepeatTabClass; ?>"><a href="#addRepeat" data-toggle="tab">Add Repeat Record</a></li>
-        </ul>
-
-        <div class="tab-content">
-          <div class="tab-pane <?php echo $addStudentPaneClass; ?>" id="addStudent">
-            <div class="card">
-              <form action="savestudent.php" method="post">
-                <center>
-                  <h4><i class="icon-edit icon-large"></i> Add New Student</h4>
-                </center>
-                <?php display_success_message('studentadded', 'Student saved successfully!'); ?>
-                <hr>
-                <div class="card-body">
-                  <span>Student ID: </span><input type="text" style="width:265px; height:40px;" name="student_id" placeholder="Student ID" required /><br>
-                  <span>First Name: </span><input type="text" style="width:265px; height:40px;" name="name" placeholder="First Name" required /><br>
-                  <span>Last Name: </span><input type="text" style="width:265px; height:40px;" name="last_name" placeholder="Last Name" required /><br>
-                  <span>Bachelor of: </span>
-                  <select name="course" style="width:280px; height:40px;" required>
-                    <option>Computer Graphic Design</option>
-                    <option>Cyber Security</option>
-                    <option>Software Engineering</option>
-                  </select><br>
-                  <span>Gender: </span><select name="gender" style="width:280px; height:40px;">
-                    <option>Male</option>
-                    <option>Female</option>
-                  </select><br>
-                  <span>Birth Date: </span><input type="date" style="width:265px; height:40px;" name="bdate" /><br>
-                  <span>Address: </span><input type="text" style="width:265px; height:40px;" name="address" placeholder="Address" /><br>
-                  <span>Contact: </span><input type="number" style="width:265px; height:40px;" name="contact" placeholder="Contact" /><br><br>
-                  <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Student</button></div>
-                </div>
-              </form>
-            </div>
+  <div class="sidebar-fixed">
+    <?php include('sidebar.php');  ?>
+  </div>
+  <div class="content-main">
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12">
+          <div class="contentheader">
+            <i class="icon-table"></i> Student and Repeat Management
           </div>
+          <ul class="breadcrumb">
+            <li><a href="index.php">Dashboard</a></li> /
+            <li class="active">Add Student & Repeats</li>
+          </ul>
 
-          <div class="tab-pane <?php echo $addRepeatPaneClass; ?>" id="addRepeat">
-            <div class="card">
-              <form action="add_repeat_record.php" method="post">
-                <center>
-                  <h4><i class="icon-plus-sign icon-large"></i> Add Failed Subject Record</h4>
-                </center>
-                <?php display_success_message('recordadded', 'Repeat record saved successfully!'); ?>
-                <hr>
-                <div class="card-body">
-                  <span>Student: </span>
-                  <select name="student_id_fk" id="student_selector" style="width:280px; height:40px;" required>
-                    <option value="" data-course="">Select a student</option>
-                    <?php foreach ($students as $student) : ?>
-                      <option value="<?php echo htmlspecialchars($student['id']); ?>" data-course="<?php echo htmlspecialchars($student['course']); ?>" <?php if ($preselected_student_id == $student['id']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name'] . ' (' . $student['student_id'] . ')'); ?>
-                      </option>
-                    <?php endforeach; ?>
-                  </select><br>
-                  <span>Year of Failure: </span>
-                  <select name="failed_year" id="failed_year" style="width:280px; height:40px;" required>
-                    <option value="">Select Year</option>
-                    <?php for ($i = 1; $i <= 4; $i++) : ?><option value="<?php echo $i; ?>"><?php echo $i; ?></option><?php endfor; ?>
-                  </select><br>
-                  <span>Semester: </span>
-                  <select name="semester" id="semester" style="width:280px; height:40px;" required>
-                    <option value="">Select Semester</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                  </select><br>
-                  <span>Subject Name: </span>
-                  <select name="subject_name" id="subject_name" style="width:280px; height:40px;" disabled required>
-                    <option value="">Select Student, Year, and Semester first</option>
-                  </select><br>
-                  <span>Academic Year: </span><input type="text" name="academic_year" style="width:265px; height:40px;" placeholder="e.g., 2023-2024" required /><br>
-                  <span>Subject Passed: </span>
-                  <input type="hidden" name="passed" value="0">
-                  <input type="checkbox" name="passed" value="1" title="Check if the student has passed this subject" style="width:30px; height:30px;"><br><br>
-                  <span>Notes (Optional): </span><textarea style="width:265px; height:50px;" name="notes"></textarea><br><br>
-                  <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Add Record</button></div>
-                </div>
-              </form>
+          <a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
+          <div style="clear:both; margin-bottom: 10px;"></div>
+
+          <ul class="nav nav-tabs" id="myTab">
+            <li class="<?php echo $addStudentTabClass; ?>"><a href="#addStudent" data-toggle="tab">Add Student</a></li>
+            <li class="<?php echo $addRepeatTabClass; ?>"><a href="#addRepeat" data-toggle="tab">Add Repeat Record</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane <?php echo $addStudentPaneClass; ?>" id="addStudent">
+              <div class="card">
+                <form action="savestudent.php" method="post">
+                  <center>
+                    <h4><i class="icon-edit icon-large"></i> Add New Student</h4>
+                  </center>
+                  <?php display_success_message('studentadded', 'Student saved successfully!'); ?>
+                  <hr>
+                  <div class="card-body">
+                    <span>Student ID: </span><input type="text" style="width:265px; height:40px;" name="student_id" placeholder="Student ID" required /><br>
+                    <span>First Name: </span><input type="text" style="width:265px; height:40px;" name="name" placeholder="First Name" required /><br>
+                    <span>Last Name: </span><input type="text" style="width:265px; height:40px;" name="last_name" placeholder="Last Name" required /><br>
+                    <span>Bachelor of: </span>
+                    <select name="course" style="width:280px; height:40px;" required>
+                      <option>Computer Graphic Design</option>
+                      <option>Cyber Security</option>
+                      <option>Software Engineering</option>
+                    </select><br>
+                    <span>Gender: </span><select name="gender" style="width:280px; height:40px;">
+                      <option>Male</option>
+                      <option>Female</option>
+                    </select><br>
+                    <span>Birth Date: </span><input type="date" style="width:265px; height:40px;" name="bdate" /><br>
+                    <span>Address: </span><input type="text" style="width:265px; height:40px;" name="address" placeholder="Address" /><br>
+                    <span>Contact: </span><input type="number" style="width:265px; height:40px;" name="contact" placeholder="Contact" /><br><br>
+                    <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Student</button></div>
+                  </div>
+                </form>
+              </div> q
+            </div>
+
+            <div class="tab-pane <?php echo $addRepeatPaneClass; ?>" id="addRepeat">
+              <div class="card">
+                <form action="add_repeat_record.php" method="post">
+                  <center>
+                    <h4><i class="icon-plus-sign icon-large"></i> Add Failed Subject Record</h4>
+                  </center>
+                  <?php display_success_message('recordadded', 'Repeat record saved successfully!'); ?>
+                  <hr>
+                  <div class="card-body">
+                    <span>Student: </span>
+                    <select name="student_id_fk" id="student_selector" style="width:280px; height:40px;" required>
+                      <option value="" data-course="">Select a student</option>
+                      <?php foreach ($students as $student) : ?>
+                        <option value="<?php echo htmlspecialchars($student['id']); ?>" data-course="<?php echo htmlspecialchars($student['course']); ?>" <?php if ($preselected_student_id == $student['id']) echo 'selected'; ?>>
+                          <?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name'] . ' (' . $student['student_id'] . ')'); ?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select><br>
+                    <span>Year of Failure: </span>
+                    <select name="failed_year" id="failed_year" style="width:280px; height:40px;" required>
+                      <option value="">Select Year</option>
+                      <?php for ($i = 1; $i <= 4; $i++) : ?><option value="<?php echo $i; ?>"><?php echo $i; ?></option><?php endfor; ?>
+                    </select><br>
+                    <span>Semester: </span>
+                    <select name="semester" id="semester" style="width:280px; height:40px;" required>
+                      <option value="">Select Semester</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                    </select><br>
+                    <span>Subject Name: </span>
+                    <select name="subject_name" id="subject_name" style="width:280px; height:40px;" disabled required>
+                      <option value="">Select Student, Year, and Semester first</option>
+                    </select><br>
+                    <span>Academic Year: </span><input type="text" name="academic_year" style="width:265px; height:40px;" placeholder="e.g., 2023-2024" required /><br>
+                    <span>Subject Passed: </span>
+                    <input type="hidden" name="passed" value="0">
+                    <input type="checkbox" name="passed" value="1" title="Check if the student has passed this subject" style="width:30px; height:30px;"><br><br>
+                    <span>Notes (Optional): </span><textarea style="width:265px; height:50px;" name="notes"></textarea><br><br>
+                    <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Add Record</button></div>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -213,6 +211,7 @@ function display_success_message($type, $message)
   <script src="lib/jquery-3.7.1.min.js"></script>
   <script src="src/facebox.js"></script>
   <script src="js/bootstrap.min.js"></script>
+
 
   <script>
     jQuery(document).ready(function($) {
