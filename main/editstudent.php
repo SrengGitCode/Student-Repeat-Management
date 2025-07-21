@@ -7,8 +7,10 @@ ini_set('display_errors', 1);
 require_once('auth.php');
 include('../connect.php');
 
-// Initialize student variable
+// --- Initialize variables ---
 $student = null;
+$degrees = [];
+$courses = [];
 
 // Get the student ID from the URL and validate it
 $student_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
@@ -16,14 +18,28 @@ $student_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 if ($student_id) {
 	try {
 		if (isset($db)) {
-			// Fetch the student's main information to pre-fill the form
-			$stmt = $db->prepare("SELECT * FROM student WHERE id = :userid");
-			$stmt->bindParam(':userid', $student_id);
-			$stmt->execute();
-			$student = $stmt->fetch(PDO::FETCH_ASSOC);
+			// Fetch the specific student's information, joining to get degree and course IDs
+			$stmt_student = $db->prepare("
+                SELECT s.*, c.degree_id 
+                FROM student s
+                JOIN courses c ON s.course_id = c.id
+                WHERE s.id = :userid
+            ");
+			$stmt_student->bindParam(':userid', $student_id);
+			$stmt_student->execute();
+			$student = $stmt_student->fetch(PDO::FETCH_ASSOC);
+
+			// Fetch all degrees for the dropdown
+			$stmt_degrees = $db->prepare("SELECT * FROM degrees ORDER BY degree_name ASC");
+			$stmt_degrees->execute();
+			$degrees = $stmt_degrees->fetchAll(PDO::FETCH_ASSOC);
+
+			// Fetch all courses for the dynamic dropdown logic
+			$stmt_courses = $db->prepare("SELECT id, course_name, degree_id FROM courses ORDER BY course_name ASC");
+			$stmt_courses->execute();
+			$courses = $stmt_courses->fetchAll(PDO::FETCH_ASSOC);
 		}
 	} catch (PDOException $e) {
-		// Display a detailed error message if the query fails
 		die("Database Error: " . $e->getMessage());
 	}
 }
@@ -38,7 +54,6 @@ if (!$student) {
 <head>
 	<title>Edit Student</title>
 	<link href="css/bootstrap.css" rel="stylesheet">
-	<link rel="stylesheet" type="text/css" href="css/DT_bootstrap.css">
 	<link rel="stylesheet" href="css/font-awesome.min.css">
 	<link href="css/sidebar.css" rel="stylesheet">
 	<style type="text/css">
@@ -47,11 +62,6 @@ if (!$student) {
 			padding-bottom: 40px;
 		}
 
-		.sidebar-nav {
-			padding: 9px 0;
-		}
-
-		/* Card-like design for the edit form */
 		.card {
 			background-color: #ffffff;
 			border: 1px solid #e0e0e0;
@@ -60,26 +70,23 @@ if (!$student) {
 			margin: 20px auto;
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 			width: 450px;
-			/* Adjust width as needed */
 		}
 
 		.card-body span {
 			display: inline-block;
 			width: 120px;
-			/* Aligns the labels */
 			text-align: right;
 			margin-right: 10px;
 		}
 	</style>
 	<link href="css/bootstrap-responsive.css" rel="stylesheet">
 	<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-	<link href="src/facebox.css" media="screen" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
 	<?php include('navfixed.php'); ?>
 	<div class="sidebar-fixed">
-		<?php include('sidebar.php');  ?>
+		<?php include('sidebar.php'); ?>
 	</div>
 	<div class="content-main">
 		<div class="container-fluid">
@@ -112,11 +119,19 @@ if (!$student) {
 
 								<span>Last Name: </span><input type="text" style="width:265px; height:40px;" name="last_name" value="<?php echo htmlspecialchars($student['last_name']); ?>" required /><br>
 
-								<span>Bachelor of: </span>
-								<select name="course" style="width:280px; height:40px;" required>
-									<option <?php echo ($student['course'] == 'Computer Graphic Design') ? 'selected' : ''; ?>>Computer Graphic Design</option>
-									<option <?php echo ($student['course'] == 'Cyber Security') ? 'selected' : ''; ?>>Cyber Security</option>
-									<option <?php echo ($student['course'] == 'Software Engineering') ? 'selected' : ''; ?>>Software Engineering</option>
+								<span>Degree Level: </span>
+								<select id="degree_selector" style="width:280px; height:40px;" required>
+									<option value="">Select a Degree</option>
+									<?php foreach ($degrees as $degree): ?>
+										<option value="<?php echo $degree['id']; ?>" <?php if ($degree['id'] == $student['degree_id']) echo 'selected'; ?>>
+											<?php echo htmlspecialchars($degree['degree_name']); ?>
+										</option>
+									<?php endforeach; ?>
+								</select><br>
+
+								<span>Course/Program: </span>
+								<select name="course_id" id="course_selector" style="width:280px; height:40px;" required>
+									<option value="">Select a Degree First</option>
 								</select><br>
 
 								<span>Gender: </span>
@@ -144,8 +159,45 @@ if (!$student) {
 	<?php include('footer.php'); ?>
 
 	<script src="lib/jquery-3.7.1.min.js"></script>
-	<script src="src/facebox.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			const allCourses = <?php echo json_encode($courses); ?>;
+			const studentCourseId = <?php echo $student['course_id']; ?>;
+
+			function populateCourses(degreeId) {
+				const courseSelector = $('#course_selector');
+				courseSelector.html('<option value="">Select a Course</option>').prop('disabled', true);
+
+				if (degreeId) {
+					const filteredCourses = allCourses.filter(course => course.degree_id == degreeId);
+					if (filteredCourses.length > 0) {
+						filteredCourses.forEach(function(course) {
+							courseSelector.append($('<option>', {
+								value: course.id,
+								text: course.course_name
+							}));
+						});
+						courseSelector.prop('disabled', false);
+					}
+				}
+			}
+
+			// When the degree selector changes, update the course list
+			$('#degree_selector').on('change', function() {
+				const selectedDegreeId = $(this).val();
+				populateCourses(selectedDegreeId);
+			});
+
+			// On page load, populate the courses for the student's current degree
+			const initialDegreeId = $('#degree_selector').val();
+			if (initialDegreeId) {
+				populateCourses(initialDegreeId);
+				// Pre-select the student's current course
+				$('#course_selector').val(studentCourseId);
+			}
+		});
+	</script>
 </body>
 
 </html>

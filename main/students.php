@@ -102,12 +102,16 @@ $filter_mode = $_GET['filter'] ?? '';
 							<?php
 							$sql = "
 							SELECT 
-								s.*, 
+								s.id, s.student_id, s.name, s.last_name,
+								c.course_name,
+								d.degree_name,
 								COUNT(r.id) AS total_subjects,
 								IFNULL(SUM(CASE WHEN r.passed = 0 THEN 1 ELSE 0 END), 0) AS failed_count
 							FROM student s
+							LEFT JOIN courses c ON s.course_id = c.id
+							LEFT JOIN degrees d ON c.degree_id = d.id
 							LEFT JOIN repeat_records r ON s.id = r.student_id_fk
-							GROUP BY s.id
+							GROUP BY s.id, s.student_id, s.name, s.last_name, c.course_name, d.degree_name
 						";
 
 							if ($filter_mode === 'at_risk') {
@@ -127,7 +131,7 @@ $filter_mode = $_GET['filter'] ?? '';
 								<tr <?php echo $highlight; ?>>
 									<td><?php echo htmlspecialchars($row['student_id']); ?></td>
 									<td><?php echo htmlspecialchars($row['name'] . ' ' . $row['last_name']); ?></td>
-									<td><?php echo htmlspecialchars($row['course']); ?></td>
+									<td><?php echo htmlspecialchars($row['degree_name'] . ' of ' . $row['course_name']); ?></td>
 									<td style="text-align:center;"><?php echo $row['total_subjects']; ?></td>
 									<td style="text-align:center;">
 										<span class="label <?php echo $failed_count > 0 ? 'label-important' : 'label-success'; ?>">

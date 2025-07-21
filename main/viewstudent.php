@@ -17,8 +17,14 @@ $student_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 if ($student_id) {
 	try {
 		if (isset($db)) {
-			// Fetch the student's main information
-			$stmt_student = $db->prepare("SELECT * FROM student WHERE id = :userid");
+			// UPDATED QUERY: Joins student, courses, and degrees to get names
+			$stmt_student = $db->prepare("
+                SELECT s.*, c.course_name, d.degree_name 
+                FROM student s
+                JOIN courses c ON s.course_id = c.id
+                JOIN degrees d ON c.degree_id = d.id
+                WHERE s.id = :userid
+            ");
 			$stmt_student->bindParam(':userid', $student_id);
 			$stmt_student->execute();
 			$student = $stmt_student->fetch(PDO::FETCH_ASSOC);
@@ -163,8 +169,9 @@ if (!$student) {
 								<td><?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name']); ?></td>
 							</tr>
 							<tr>
-								<td>Bachelor of:</td>
-								<td><?php echo htmlspecialchars($student['course']); ?></td>
+								<td>Program:</td>
+								<!-- CORRECTED: Displays full degree and course name -->
+								<td><?php echo htmlspecialchars($student['degree_name'] . ' of ' . $student['course_name']); ?></td>
 							</tr>
 							<tr>
 								<td>Gender:</td>
@@ -186,9 +193,9 @@ if (!$student) {
 					</div>
 
 					<div class="info-card" style="padding: 0% 3% ">
-						<div class="card-header" style="margin-right: 7%; padding: 6px;">
+						<div class="card-header" style="padding: 6px;">
 							<h4><i class="icon-list-alt icon-large"></i> Failed / Repeat Subject Records</h4>
-							<a href="addstudent.php?student_id=<?php echo $student_id; ?>&tab=addRepeat" style="float: right;" class="btn btn-primary"><i class="icon-plus"></i> Add Subject Record</a>
+							<a href="addstudent.php?student_id=<?php echo $student_id; ?>&tab=addRepeat" style="float: right; font-size: large;" class="btn btn-primary"><i class="icon-plus"></i> Add Subject Record</a>
 						</div>
 
 						<?php if (empty($grouped_records)) : ?>
@@ -198,7 +205,7 @@ if (!$student) {
 						<?php else : ?>
 							<?php foreach ($grouped_records as $year => $semesters) : ?>
 								<div class="year-card" style="">
-									<h4 style="color: #0056b3;">Year <?php echo htmlspecialchars($year); ?></h4>
+									<h4 style="color: #0056b3;">Year <?php echo htmlspecialchars(string: $year); ?></h4>
 
 									<?php foreach ($semesters as $semester => $records) : ?>
 										<div class="semester-card">
@@ -208,6 +215,7 @@ if (!$student) {
 													<tr>
 														<th>Subject Name</th>
 														<th>Academic Year</th>
+														<th>Notes</th>
 														<th>Status</th>
 														<th style="text-align:center;">Actions</th>
 													</tr>
@@ -217,6 +225,7 @@ if (!$student) {
 														<tr>
 															<td><?php echo htmlspecialchars($record['subject_name']); ?></td>
 															<td><?php echo htmlspecialchars($record['academic_year']); ?></td>
+															<td><?php echo htmlspecialchars($record['notes']); ?></td>
 															<td style="text-align:center;" title="Clickable">
 																<a href="update_status.php?id=<?php echo $record['id']; ?>&status=<?php echo $record['passed'] ? '0' : '1'; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-mini <?php echo $record['passed'] ? 'btn-success' : 'btn-danger'; ?>">
 																	<?php echo $record['passed'] ? '<i class="icon-ok"></i> Passed' : '<i class="icon-remove"></i> Failed'; ?>

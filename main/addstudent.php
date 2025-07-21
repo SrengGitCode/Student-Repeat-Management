@@ -7,11 +7,42 @@ ini_set('display_errors', 1);
 require_once('auth.php');
 include('../connect.php');
 
-// Get student ID and tab from URL for pre-selection
+// --- Fetch data for the forms ---
+$degrees = [];
+$courses = [];
+$students = [];
+
+try {
+  if (isset($db)) {
+    // Fetch all degrees
+    $stmt_degrees = $db->prepare("SELECT * FROM degrees ORDER BY degree_name ASC");
+    $stmt_degrees->execute();
+    $degrees = $stmt_degrees->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch all courses and join with degrees
+    $stmt_courses = $db->prepare("SELECT c.id, c.course_name, c.degree_id, d.degree_name FROM courses c JOIN degrees d ON c.degree_id = d.id ORDER BY d.degree_name, c.course_name");
+    $stmt_courses->execute();
+    $courses = $stmt_courses->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch all students and join with courses and degrees to get all necessary info
+    $stmt_students = $db->prepare("
+            SELECT s.id, s.student_id, s.name, s.last_name, s.course_id, c.course_name, d.degree_name 
+            FROM student s
+            JOIN courses c ON s.course_id = c.id
+            JOIN degrees d ON c.degree_id = d.id
+            ORDER BY s.name ASC
+        ");
+    $stmt_students->execute();
+    $students = $stmt_students->fetchAll(PDO::FETCH_ASSOC);
+  }
+} catch (PDOException $e) {
+  die("Database Error: " . $e->getMessage());
+}
+
+// --- Handle active tab logic ---
 $preselected_student_id = filter_input(INPUT_GET, 'student_id', FILTER_SANITIZE_NUMBER_INT);
 $active_tab_param = filter_input(INPUT_GET, 'tab', FILTER_UNSAFE_RAW);
 
-// Determine which tab and pane should be active on page load
 $addStudentTabClass = 'active';
 $addRepeatTabClass = '';
 $addStudentPaneClass = 'active in';
@@ -23,25 +54,6 @@ if ($active_tab_param === 'addRepeat' || !empty($preselected_student_id)) {
   $addStudentPaneClass = '';
   $addRepeatPaneClass = 'active in';
 }
-
-// Initialize students array
-$students = [];
-try {
-  if (isset($db)) {
-    // Fetch all students AND their course to enable dynamic subject loading
-    $stmt = $db->prepare("SELECT id, student_id, name, last_name, course FROM student ORDER BY name ASC");
-    $stmt->execute();
-    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-  }
-} catch (PDOException $e) {
-  die("Database Error: " . $e->getMessage());
-}
-
-// Safely load course data from JSON files
-$cgd_json = file_exists('courses/Computer Graphic Design.json') ? file_get_contents('courses/Computer Graphic Design.json') : '{}';
-$cs_json = file_exists('courses/Cyber security.json') ? file_get_contents('courses/Cyber security.json') : '{}';
-$se_json = file_exists('courses/Software engineering.json') ? file_get_contents('courses/Software engineering.json') : '{}';
-
 
 /**
  * Displays a success message if the corresponding URL parameter is set.
@@ -96,8 +108,6 @@ function display_success_message($type, $message)
   </style>
   <link href="css/bootstrap-responsive.css" rel="stylesheet">
   <link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="src/facebox.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/sidebar.css" rel="stylesheet">
 </head>
 
 <body>
@@ -138,12 +148,20 @@ function display_success_message($type, $message)
                     <span>Student ID: </span><input type="text" style="width:265px; height:40px;" name="student_id" placeholder="Student ID" required /><br>
                     <span>First Name: </span><input type="text" style="width:265px; height:40px;" name="name" placeholder="First Name" required /><br>
                     <span>Last Name: </span><input type="text" style="width:265px; height:40px;" name="last_name" placeholder="Last Name" required /><br>
-                    <span>Bachelor of: </span>
-                    <select name="course" style="width:280px; height:40px;" required>
-                      <option>Computer Graphic Design</option>
-                      <option>Cyber Security</option>
-                      <option>Software Engineering</option>
+
+                    <span>Degree Level: </span>
+                    <select id="degree_selector_student" style="width:280px; height:40px;" required>
+                      <option value="">Select a Degree</option>
+                      <?php foreach ($degrees as $degree): ?>
+                        <option value="<?php echo $degree['id']; ?>"><?php echo htmlspecialchars($degree['degree_name']); ?></option>
+                      <?php endforeach; ?>
                     </select><br>
+
+                    <span>Course/Program: </span>
+                    <select name="course_id" id="course_selector_student" style="width:280px; height:40px;" required disabled>
+                      <option value="">Select a Degree First</option>
+                    </select><br>
+
                     <span>Gender: </span><select name="gender" style="width:280px; height:40px;">
                       <option>Male</option>
                       <option>Female</option>
@@ -154,7 +172,7 @@ function display_success_message($type, $message)
                     <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Save Student</button></div>
                   </div>
                 </form>
-              </div> q
+              </div>
             </div>
 
             <div class="tab-pane <?php echo $addRepeatPaneClass; ?>" id="addRepeat">
@@ -167,33 +185,33 @@ function display_success_message($type, $message)
                   <hr>
                   <div class="card-body">
                     <span>Student: </span>
-                    <select name="student_id_fk" id="student_selector" style="width:280px; height:40px;" required>
-                      <option value="" data-course="">Select a student</option>
+                    <select name="student_id_fk" id="student_selector_repeat" style="width:280px; height:40px;" required>
+                      <option value="" data-courseid="">Select a student</option>
                       <?php foreach ($students as $student) : ?>
-                        <option value="<?php echo htmlspecialchars($student['id']); ?>" data-course="<?php echo htmlspecialchars($student['course']); ?>" <?php if ($preselected_student_id == $student['id']) echo 'selected'; ?>>
-                          <?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name'] . ' (' . $student['student_id'] . ')'); ?>
+                        <option value="<?php echo htmlspecialchars($student['id']); ?>" data-courseid="<?php echo htmlspecialchars($student['course_id']); ?>" <?php if ($preselected_student_id == $student['id']) echo 'selected'; ?>>
+                          <?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name'] . ' (' . $student['degree_name'] . ' of ' . $student['course_name'] . ')'); ?>
                         </option>
                       <?php endforeach; ?>
                     </select><br>
                     <span>Year of Failure: </span>
-                    <select name="failed_year" id="failed_year" style="width:280px; height:40px;" required>
+                    <select name="failed_year" id="failed_year_repeat" style="width:280px; height:40px;" required>
                       <option value="">Select Year</option>
                       <?php for ($i = 1; $i <= 4; $i++) : ?><option value="<?php echo $i; ?>"><?php echo $i; ?></option><?php endfor; ?>
                     </select><br>
                     <span>Semester: </span>
-                    <select name="semester" id="semester" style="width:280px; height:40px;" required>
+                    <select name="semester" id="semester_repeat" style="width:280px; height:40px;" required>
                       <option value="">Select Semester</option>
                       <option value="1">1</option>
                       <option value="2">2</option>
                     </select><br>
                     <span>Subject Name: </span>
-                    <select name="subject_name" id="subject_name" style="width:280px; height:40px;" disabled required>
+                    <select name="subject_name" id="subject_name_repeat" style="width:280px; height:40px;" disabled required>
                       <option value="">Select Student, Year, and Semester first</option>
                     </select><br>
                     <span>Academic Year: </span><input type="text" name="academic_year" style="width:265px; height:40px;" placeholder="e.g., 2023-2024" required /><br>
                     <span>Subject Passed: </span>
                     <input type="hidden" name="passed" value="0">
-                    <input type="checkbox" name="passed" value="1" title="Check if the student has passed this subject" style="width:30px; height:30px;"><br><br>
+                    <input type="checkbox" name="passed" value="1" title="subject is already failed - Greyed out" style="width:30px; height:30px;" disabled><br><br>
                     <span>Notes (Optional): </span><textarea style="width:265px; height:50px;" name="notes"></textarea><br><br>
                     <div style="text-align: center;"><button class="btn btn-success btn-large" style="width:280px;"><i class="icon icon-save icon-large"></i> Add Record</button></div>
                   </div>
@@ -204,91 +222,102 @@ function display_success_message($type, $message)
         </div>
       </div>
     </div>
-  </div>
 
-  <?php include('footer.php'); ?>
+    <?php include('footer.php'); ?>
 
-  <script src="lib/jquery-3.7.1.min.js"></script>
-  <script src="src/facebox.js"></script>
-  <script src="js/bootstrap.min.js"></script>
+    <script src="lib/jquery-3.7.1.min.js"></script>
+    <script src="src/facebox.js"></script>
+    <script src="js/bootstrap.min.js"></script>
 
+    <script>
+      jQuery(document).ready(function($) {
+        // --- Data for dynamic dropdowns ---
+        const courses = <?php echo json_encode($courses); ?>;
+        const allSubjects = {}; // We will fetch this via AJAX
 
-  <script>
-    jQuery(document).ready(function($) {
-      const courseData = {
-        "Computer Graphic Design": <?php echo $cgd_json; ?>,
-        "Cyber Security": <?php echo $cs_json; ?>,
-        "Software Engineering": <?php echo $se_json; ?>
-      };
+        // --- Logic for "Add Student" Tab ---
+        $('#degree_selector_student').on('change', function() {
+          const degreeId = $(this).val();
+          const courseSelector = $('#course_selector_student');
 
-      function updateSubjects() {
-        const studentSelector = $('#student_selector');
-        const selectedStudent = studentSelector.find('option:selected');
-        const courseName = selectedStudent.data('course');
-        const year = $('#failed_year').val();
-        const semester = $('#semester').val();
-        const subjectSelector = $('#subject_name');
+          courseSelector.html('<option value="">Select a Course</option>').prop('disabled', true);
 
-
-        // ---
-
-        subjectSelector.html('<option value="">Select Student, Year, and Semester first</option>').prop('disabled', true);
-
-        if (!courseName || !year || !semester) {
-          return; // Exit if any of the required fields are not selected
-        }
-
-        // Find the matching key in courseData, ignoring case and trimming whitespace
-        let matchedCourseKey = Object.keys(courseData).find(key => key.toLowerCase().trim() === courseName.toLowerCase().trim());
-
-
-        if (matchedCourseKey && courseData[matchedCourseKey]) {
-          const course = courseData[matchedCourseKey];
-          const yearData = course.years.find(y => y.year == year);
-          if (yearData) {
-            const semesterData = yearData.semesters.find(s => s.semester == semester);
-            if (semesterData && semesterData.courses.length > 0) {
-              subjectSelector.html('<option value="">Select a subject</option>');
-              semesterData.courses.forEach(function(subject) {
-                subjectSelector.append($('<option>', {
-                  value: subject,
-                  text: subject
+          if (degreeId) {
+            const filteredCourses = courses.filter(course => course.degree_id == degreeId);
+            if (filteredCourses.length > 0) {
+              filteredCourses.forEach(function(course) {
+                courseSelector.append($('<option>', {
+                  value: course.id,
+                  text: course.course_name
                 }));
               });
-              subjectSelector.prop('disabled', false); // Enable the dropdown
-
-            } else {
-              console.log("No subjects found for this semester.");
+              courseSelector.prop('disabled', false);
             }
-          } else {
-            console.log("No data found for this year.");
           }
-        } else {
-          console.log("Could not find course data for:", courseName);
+        });
+
+        // --- Logic for "Add Repeat Record" Tab ---
+        function updateSubjects() {
+          const studentSelector = $('#student_selector_repeat');
+          const selectedStudent = studentSelector.find('option:selected');
+          const courseId = selectedStudent.data('courseid');
+          const year = $('#failed_year_repeat').val();
+          const semester = $('#semester_repeat').val();
+          const subjectSelector = $('#subject_name_repeat');
+
+          subjectSelector.html('<option value="">Select Student, Year, and Semester first</option>').prop('disabled', true);
+
+          if (courseId && year && semester) {
+            // Use AJAX to get subjects from the server
+            $.ajax({
+              url: 'get_subjects.php',
+              type: 'GET',
+              data: {
+                course_id: courseId,
+                year: year,
+                semester: semester
+              },
+              dataType: 'json',
+              success: function(subjects) {
+                if (subjects && subjects.length > 0) {
+                  subjectSelector.html('<option value="">Select a subject</option>');
+                  subjects.forEach(function(subject) {
+                    subjectSelector.append($('<option>', {
+                      value: subject.subject_name,
+                      text: subject.subject_name
+                    }));
+                  });
+                  subjectSelector.prop('disabled', false);
+                } else {
+                  subjectSelector.html('<option value="">No subjects found</option>');
+                }
+              },
+              error: function() {
+                subjectSelector.html('<option value="">Error loading subjects</option>');
+              }
+            });
+          }
         }
-      }
 
-      // Attach event listener to all three dropdowns
-      $('#student_selector, #failed_year, #semester').on('change', updateSubjects);
+        $('#student_selector_repeat, #failed_year_repeat, #semester_repeat').on('change', updateSubjects);
 
-      // Trigger the function on page load if a student is already selected
-      if ($('#student_selector').val()) {
-        updateSubjects();
-      }
+        if ($('#student_selector_repeat').val()) {
+          updateSubjects();
+        }
 
-      // Facebox and Tab initialization
-      $('a[rel*=facebox]').facebox({
-        loadingImage: 'src/loading.gif',
-        closeImage: 'src/closelabel.png'
+        // --- General Page Logic ---
+        $('a[rel*=facebox]').facebox({
+          loadingImage: 'src/loading.gif',
+          closeImage: 'src/closelabel.png'
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const successParam = urlParams.get('success');
+        if (successParam === 'recordadded') {
+          $('#myTab a[href="#addRepeat"]').tab('show');
+        }
       });
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const successParam = urlParams.get('success');
-      if (successParam === 'recordadded') {
-        $('#myTab a[href="#addRepeat"]').tab('show');
-      }
-    });
-  </script>
+    </script>
 </body>
 
 </html>
