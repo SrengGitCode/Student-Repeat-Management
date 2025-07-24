@@ -6,6 +6,15 @@ require_once('auth.php');
 include('../connect.php');
 
 $filter_mode = $_GET['filter'] ?? '';
+
+// Function to determine the row class based on failed subjects
+function get_student_risk_class($failed_count)
+{
+	if ((int)$failed_count > 0) {
+		return 'error'; // Red background for students with failed subjects
+	}
+	return ''; // Green background for students with no failed subjects
+}
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +31,6 @@ $filter_mode = $_GET['filter'] ?? '';
 	<link href="../style.css" rel="stylesheet">
 	<link href="src/facebox.css" rel="stylesheet">
 	<link href="css/sidebar.css" rel="stylesheet">
-
 	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
 	<style>
@@ -35,8 +43,21 @@ $filter_mode = $_GET['filter'] ?? '';
 			padding: 9px 0;
 		}
 
-		.highlight-row {
-			background-color: #f2dede !important;
+		.clickable-row:hover {
+			cursor: pointer;
+			background-color: #f5f5f5 !important;
+		}
+
+		/* --- NEW CSS RULE TO FIX FONT --- */
+		/* This rule forces the font in the table body to be 16px and not bold. */
+		#resultTable tbody tr td {
+			font-size: 16px !important;
+			font-weight: normal !important;
+		}
+
+		#resultTable thead {
+			font-size: 16px !important;
+
 		}
 	</style>
 </head>
@@ -61,7 +82,6 @@ $filter_mode = $_GET['filter'] ?? '';
 					</ul>
 
 					<div style="margin-top: -19px; margin-bottom: 21px;">
-						<a href="students.php" class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</a>
 						<?php
 						$result = $db->prepare("SELECT count(*) as total FROM student");
 						$result->execute();
@@ -74,9 +94,7 @@ $filter_mode = $_GET['filter'] ?? '';
 						</div>
 					</div>
 
-					<div class="" <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-
-
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
 						<div>
 							<a href="addstudent.php" class="btn btn-primary btn-large"><i class="icon icon-plus-sign icon-large"></i> Add Student</a>
 							<?php if ($filter_mode === 'at_risk') : ?>
@@ -88,7 +106,7 @@ $filter_mode = $_GET['filter'] ?? '';
 					</div>
 
 					<table id="resultTable" class="table table-bordered table-hover" style="text-align: left;">
-						<thead>
+						<thead style="background-color: #343a40; color: white;">
 							<tr>
 								<th>Student ID</th>
 								<th>Full Name</th>
@@ -101,18 +119,18 @@ $filter_mode = $_GET['filter'] ?? '';
 						<tbody>
 							<?php
 							$sql = "
-							SELECT 
-								s.id, s.student_id, s.name, s.last_name,
-								c.course_name,
-								d.degree_name,
-								COUNT(r.id) AS total_subjects,
-								IFNULL(SUM(CASE WHEN r.passed = 0 THEN 1 ELSE 0 END), 0) AS failed_count
-							FROM student s
-							LEFT JOIN courses c ON s.course_id = c.id
-							LEFT JOIN degrees d ON c.degree_id = d.id
-							LEFT JOIN repeat_records r ON s.id = r.student_id_fk
-							GROUP BY s.id, s.student_id, s.name, s.last_name, c.course_name, d.degree_name
-						";
+                                SELECT 
+                                    s.id, s.student_id, s.name, s.last_name,
+                                    c.course_name,
+                                    d.degree_name,
+                                    COUNT(r.id) AS total_subjects,
+                                    IFNULL(SUM(CASE WHEN r.passed = 0 THEN 1 ELSE 0 END), 0) AS failed_count
+                                FROM student s
+                                LEFT JOIN courses c ON s.course_id = c.id
+                                LEFT JOIN degrees d ON c.degree_id = d.id
+                                LEFT JOIN repeat_records r ON s.id = r.student_id_fk
+                                GROUP BY s.id, s.student_id, s.name, s.last_name, c.course_name, d.degree_name
+                            ";
 
 							if ($filter_mode === 'at_risk') {
 								$sql .= " HAVING failed_count >= 1";
@@ -124,11 +142,11 @@ $filter_mode = $_GET['filter'] ?? '';
 							$stmt->execute();
 
 							while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-								$failed_count = (int)($row['failed_count'] ?? 0);  // Explicitly cast
-								$highlight = ($failed_count >= 1) ? 'class="highlight-row"' : '';
-
+								$failed_count = (int)($row['failed_count'] ?? 0);
+								$row_class = get_student_risk_class($failed_count); // Use the new function
+								$view_url = "viewstudent.php?id=" . $row['id'];
 							?>
-								<tr <?php echo $highlight; ?>>
+								<tr class="clickable-row <?php echo $row_class; ?>" data-href="<?php echo $view_url; ?>">
 									<td><?php echo htmlspecialchars($row['student_id']); ?></td>
 									<td><?php echo htmlspecialchars($row['name'] . ' ' . $row['last_name']); ?></td>
 									<td><?php echo htmlspecialchars($row['degree_name'] . ' of ' . $row['course_name']); ?></td>
@@ -139,7 +157,6 @@ $filter_mode = $_GET['filter'] ?? '';
 										</span>
 									</td>
 									<td style="text-align:center;">
-										<a href="viewstudent.php?id=<?php echo $row['id']; ?>" class="btn btn-success btn-mini"><i class="icon-search"></i> Subject</a>
 										<a href="editstudent.php?id=<?php echo $row['id']; ?>" class="btn btn-warning btn-mini"><i class="icon-edit"></i> Edit</a>
 										<a href="#" class="delbutton btn btn-danger btn-mini" id="<?php echo $row['id']; ?>"><i class="icon-trash"></i> Delete</a>
 									</td>
@@ -148,7 +165,6 @@ $filter_mode = $_GET['filter'] ?? '';
 
 						</tbody>
 					</table>
-
 				</div>
 			</div>
 		</div>
@@ -164,24 +180,18 @@ $filter_mode = $_GET['filter'] ?? '';
 					paging: true,
 					ordering: true,
 					info: true,
-					searching: true,
-					createdRow: function(row, data, dataIndex) {
-						// Assuming the "Failed Count" is in the 5th column (index 4)
-						var failedCount = parseInt($(data[4]).text());
+					searching: true
+				});
 
-						if (failedCount >= 3) {
-							$(row).addClass('highlight-row');
-						}
+				$('#resultTable tbody').on('click', 'tr.clickable-row', function(event) {
+					if ($(event.target).is('a, button, .btn, .btn-mini, .icon-edit, .icon-trash')) {
+						return;
 					}
+					window.location.href = $(this).data('href');
 				});
 
-				// Optional: link external search filter
-				$('#filter').on('keyup', function() {
-					oTable.search(this.value).draw();
-				});
-
-				// Delete functionality
-				$(".delbutton").click(function() {
+				$(".delbutton").click(function(e) {
+					e.preventDefault();
 					var element = $(this);
 					var del_id = element.attr("id");
 					if (confirm("Are you sure you want to delete this student and all their records? This cannot be undone.")) {
@@ -192,9 +202,7 @@ $filter_mode = $_GET['filter'] ?? '';
 								id: del_id
 							},
 							success: function() {
-								element.closest("tr").fadeOut('slow', function() {
-									$(this).remove();
-								});
+								oTable.row(element.closest("tr")).remove().draw();
 							}
 						});
 					}

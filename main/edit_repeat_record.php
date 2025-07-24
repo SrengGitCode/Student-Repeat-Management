@@ -90,7 +90,6 @@ if (!$record) {
                         <li class="active">Edit Record</li>
                     </ul>
 
-                    <a href="viewstudent.php?id=<?php echo htmlspecialchars($student_id); ?>" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
                     <div style="clear:both;"></div>
 
                     <div class="card">

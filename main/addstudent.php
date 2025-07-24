@@ -127,8 +127,7 @@ function display_success_message($type, $message)
             <li class="active">Add Student & Repeats</li>
           </ul>
 
-          <a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
-          <div style="clear:both; margin-bottom: 10px;"></div>
+         <div style="clear:both; margin-bottom: 10px;"></div>
 
           <ul class="nav nav-tabs" id="myTab">
             <li class="<?php echo $addStudentTabClass; ?>"><a href="#addStudent" data-toggle="tab">Add Student</a></li>
@@ -208,7 +207,26 @@ function display_success_message($type, $message)
                     <select name="subject_name" id="subject_name_repeat" style="width:280px; height:40px;" disabled required>
                       <option value="">Select Student, Year, and Semester first</option>
                     </select><br>
-                    <span>Academic Year: </span><input type="text" name="academic_year" style="width:265px; height:40px;" placeholder="e.g., 2023-2024" required /><br>
+                    <span>Academic Year (Start): </span>
+                    <select name="academic_year_start" style="width:280px; height:40px;" required>
+                      <?php
+                      // Get the current year (2025)
+                      $currentYear = date('Y');
+
+                      // Define the range of years to display
+                      $endYear = $currentYear + 1;   // The latest year to show (2026)
+                      $startYear = $currentYear - 5; // The earliest year to show (2020)
+
+                      // Loop from the newest year to the oldest
+                      for ($year = $endYear; $year >= $startYear; $year--) {
+                        // Add the 'selected' attribute if the year in the loop matches the current year
+                        $selected_attribute = ($year == $currentYear) ? 'selected' : '';
+
+                        // Print the <option> element
+                        echo '<option value="' . $year . '" ' . $selected_attribute . '>' . $year . '</option>';
+                      }
+                      ?>
+                    </select><br>
                     <span>Subject Passed: </span>
                     <input type="hidden" name="passed" value="0">
                     <input type="checkbox" name="passed" value="1" title="subject is already failed - Greyed out" style="width:30px; height:30px;" disabled><br><br>
@@ -234,7 +252,7 @@ function display_success_message($type, $message)
         // --- Data for dynamic dropdowns ---
         const courses = <?php echo json_encode($courses); ?>;
         const allSubjects = {}; // We will fetch this via AJAX
-
+        
         // --- Logic for "Add Student" Tab ---
         $('#degree_selector_student').on('change', function() {
           const degreeId = $(this).val();

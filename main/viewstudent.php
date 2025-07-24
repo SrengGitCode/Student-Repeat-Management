@@ -152,7 +152,6 @@ if (!$student) {
 						<li class="active">View Student</li>
 					</ul>
 
-					<a href="students.php" style="float:left; margin-right:10px;"><button class="btn btn-default btn-large"><i class="icon icon-circle-arrow-left icon-large"></i> Back</button></a>
 					<div style="clear:both;"></div>
 
 					<div class="info-card student-info-card" style="border-style: solid;">
