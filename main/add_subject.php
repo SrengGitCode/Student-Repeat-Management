@@ -112,11 +112,9 @@ $courses = $db->query("
         </div>
     </div>
 
-    <!-- CORRECTED: Using a modern version of jQuery from a CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Add new subject field
             $('#add_subject_button').click(function() {
                 var newField = `
                     <div class="input-append" style="margin-bottom: 5px;">
@@ -126,7 +124,6 @@ $courses = $db->query("
                 $('#subject_fields_container').append(newField);
             });
 
-            // Remove subject field
             $('#subject_fields_container').on('click', '.remove_field', function() {
                 $(this).parent('div.input-append').remove();
             });

@@ -99,7 +99,7 @@ if (!$student) {
                         <?php if (!empty($student['photo'])): ?>
                             <img src="uploads/<?php echo htmlspecialchars($student['photo']); ?>" class="student-photo" alt="Student Photo">
                         <?php else: ?>
-                            <img src="img/default-logo.jpg" class="student-photo" alt="Default Avatar" title="No Image">
+                            <img src="img/default-logo.png" class="student-photo" alt="Default Avatar" title="No Image">
                         <?php endif; ?>
                         <h3><?php echo htmlspecialchars($student['name'] . ' ' . $student['last_name']); ?></h3>
                         <p><span class="label label-info"><?php echo htmlspecialchars($student['status']); ?></span></p>

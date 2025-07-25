@@ -9,6 +9,8 @@ include('../connect.php');
 // Initialize counts
 $student_count = 0;
 $students_with_fails_count = 0;
+$courses_count = 0;
+$transfers_count = 0;
 
 try {
 	if (isset($db)) {
@@ -17,10 +19,20 @@ try {
 		$result_students->execute();
 		$student_count = $result_students->fetchColumn();
 
-		// Query to count unique students with at least one failed record (passed = 0)
+		// Query to count unique students with at least one failed record
 		$result_fails = $db->prepare("SELECT COUNT(DISTINCT student_id_fk) FROM repeat_records WHERE passed = 0");
 		$result_fails->execute();
 		$students_with_fails_count = $result_fails->fetchColumn();
+
+		// Query to count total courses
+		$result_courses = $db->prepare("SELECT count(*) FROM courses");
+		$result_courses->execute();
+		$courses_count = $result_courses->fetchColumn();
+
+		// Query to count total transfer students
+		$result_transfers = $db->prepare("SELECT count(*) FROM transfer_students");
+		$result_transfers->execute();
+		$transfers_count = $result_transfers->fetchColumn();
 	}
 } catch (PDOException $e) {
 	die("Database Error: " . $e->getMessage());
@@ -35,7 +47,7 @@ try {
 	<link rel="stylesheet" href="css/font-awesome.min.css">
 	<link href="css/bootstrap-responsive.css" rel="stylesheet">
 	<link href="../style.css" media="screen" rel="stylesheet" type="text/css" />
-	<link href="css/sidebar.css" rel="stylesheet"> <!-- Link to the new custom CSS -->
+	<link href="css/sidebar.css" rel="stylesheet">
 	<style type="text/css">
 		/* Redesigned Stat Box Styles */
 		.stat-box {
@@ -53,14 +65,29 @@ try {
 		}
 
 		.stat-box:hover {
-			background-color: #51A351;
 			color: #fff;
 			transform: translateY(-5px);
 			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 		}
 
+		.stat-box.students:hover {
+			background-color: #51A351;
+		}
+
 		.stat-box.at-risk:hover {
 			background-color: #f89406;
+		}
+
+		.stat-box.add-new:hover {
+			background-color: #2f96b4;
+		}
+
+		.stat-box.academics:hover {
+			background-color: #8e44ad;
+		}
+
+		.stat-box.transfers:hover {
+			background-color: #e74c3c;
 		}
 
 		.stat-box i {
@@ -86,13 +113,19 @@ try {
 			text-transform: uppercase;
 			letter-spacing: 1px;
 		}
+
+		.section-header {
+			border-bottom: 1px solid #eee;
+			padding-bottom: 10px;
+			margin-bottom: 20px;
+			margin-top: 20px;
+		}
 	</style>
 </head>
 
 <body>
 	<?php include('navfixed.php'); ?>
 
-	<!-- New Responsive Layout Structure -->
 	<div class="sidebar-fixed">
 		<?php include('sidebar.php'); ?>
 	</div>
@@ -109,9 +142,12 @@ try {
 					</ul>
 
 					<div id="main-stats">
+
+						<!-- Student Repeat System Section -->
+						<h3 class="section-header">Student Repeat System</h3>
 						<div class="row-fluid">
 							<div class="span4">
-								<a class="stat-box" href="students.php">
+								<a class="stat-box students" href="students.php">
 									<i class="icon-group icon-4x"></i>
 									<div class="stat-info">
 										<span class="stat-count"><?php echo $student_count; ?></span>
@@ -129,7 +165,7 @@ try {
 								</a>
 							</div>
 							<div class="span4">
-								<a class="stat-box" href="addstudent.php">
+								<a class="stat-box add-new" href="addstudent.php">
 									<i class="icon-plus-sign icon-4x"></i>
 									<div class="stat-info">
 										<span class="stat-count" style="font-size: 22px; padding-top: 6px;">Add New</span>
@@ -138,6 +174,32 @@ try {
 								</a>
 							</div>
 						</div>
+						<div class="row-fluid">
+							<div class="span4">
+								<a class="stat-box academics" href="manage_academics.php">
+									<i class="icon-book icon-4x"></i>
+									<div class="stat-info">
+										<span class="stat-count"><?php echo $courses_count; ?></span>
+										<span class="stat-label">Manage Academics</span>
+									</div>
+								</a>
+							</div>
+						</div>
+
+						<!-- Student Transfer System Section -->
+						<h3 class="section-header">Student Transfer System</h3>
+						<div class="row-fluid">
+							<div class="span4">
+								<a class="stat-box transfers" href="manage_transfers.php">
+									<i class="icon-exchange icon-4x"></i>
+									<div class="stat-info">
+										<span class="stat-count"><?php echo $transfers_count; ?></span>
+										<span class="stat-label">Manage Transfers</span>
+									</div>
+								</a>
+							</div>
+						</div>
+
 					</div>
 					<div class="clearfix"></div>
 				</div>
