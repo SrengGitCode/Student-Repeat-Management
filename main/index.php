@@ -179,7 +179,7 @@ try {
 								<a class="stat-box academics" href="manage_academics.php">
 									<i class="icon-book icon-4x"></i>
 									<div class="stat-info">
-										<span class="stat-count"><?php echo $courses_count; ?></span>
+										<span class="stat-count" style="font-size: 22px; padding-top: 6px;">Add New</span>
 										<span class="stat-label">Manage Academics</span>
 									</div>
 								</a>

@@ -110,7 +110,7 @@ function get_student_risk_class($failed_count)
 							<tr>
 								<th>Student ID</th>
 								<th>Full Name</th>
-								<th>Bachelor Of</th>
+								<th>Degree</th>
 								<th style="text-align:center;">Total Subjects</th>
 								<th style="text-align:center;">Failed Count</th>
 								<th style="text-align:center;">Actions</th>
