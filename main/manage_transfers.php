@@ -162,7 +162,12 @@ function get_status_class($status)
                                     </select>
                                 </div>
                                 <div style="margin-bottom: 10px;"><span>Student Photo: </span><input type="file" name="photo" style="vertical-align: middle;"></div>
-                                <div style="margin-bottom: 10px;"><span>Transcript/Document: </span><input type="file" name="document" style="vertical-align: middle;"></div>
+
+                                <div style="margin-bottom: 10px;">
+                                    <span>Transcripts/Documents: </span>
+                                    <input type="file" name="documents[]" style="vertical-align: middle;" multiple>
+                                </div>
+
                                 <div style="margin-bottom: 10px;"><span>Notes: </span><textarea name="notes" style="width:280px; height:60px; vertical-align: top;"></textarea></div>
                                 <br>
                                 <div style="text-align:center;"><button class="btn btn-success btn-large" style="width:280px;">Save Transfer Student</button></div>

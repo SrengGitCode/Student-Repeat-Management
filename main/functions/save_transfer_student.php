@@ -8,28 +8,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit();
 }
 
-// --- File Upload Handling ---
-function handle_upload($file_key, $upload_dir = '../uploads/')
-{
-    if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] == 0) {
-        $filename = time() . '_' . basename($_FILES[$file_key]['name']);
-        $target_path = $upload_dir . $filename;
-
-        // Create uploads directory if it doesn't exist
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
-
-        if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target_path)) {
-            return $filename; // Return the new filename if upload is successful
-        }
-    }
-    return null; // Return null if no file or an error occurred
-}
-
-$photo_filename = handle_upload('photo');
-$document_filename = handle_upload('document');
-
 // --- Sanitize and retrieve form data ---
 $student_id = filter_input(INPUT_POST, 'student_id', FILTER_UNSAFE_RAW);
 $name = filter_input(INPUT_POST, 'name', FILTER_UNSAFE_RAW);
@@ -44,6 +22,41 @@ $transfer_date = filter_input(INPUT_POST, 'transfer_date', FILTER_UNSAFE_RAW);
 $status = filter_input(INPUT_POST, 'status', FILTER_UNSAFE_RAW);
 $notes = filter_input(INPUT_POST, 'notes', FILTER_UNSAFE_RAW);
 
+// --- File Upload Logic ---
+$upload_dir = "../uploads/";
+if (!is_dir($upload_dir)) {
+    mkdir($upload_dir, 0755, true);
+}
+
+// 1. Handle the single photo upload
+$photo_path_to_db = null;
+if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+    $photo_name = time() . '_' . basename($_FILES["photo"]["name"]);
+    if (move_uploaded_file($_FILES["photo"]["tmp_name"], $upload_dir . $photo_name)) {
+        // We store the path relative to the uploads folder
+        $photo_path_to_db = $photo_name;
+    }
+}
+
+// 2. Handle the multiple document uploads
+$document_paths = [];
+if (isset($_FILES['documents']) && is_array($_FILES['documents']['name'])) {
+    $file_count = count($_FILES['documents']['name']);
+    for ($i = 0; $i < $file_count; $i++) {
+        // Check if a file was uploaded and there's no error
+        if (isset($_FILES['documents']['error'][$i]) && $_FILES['documents']['error'][$i] === UPLOAD_ERR_OK) {
+            $doc_name = time() . '_' . basename($_FILES["documents"]["name"][$i]);
+            if (move_uploaded_file($_FILES["documents"]["tmp_name"][$i], $upload_dir . $doc_name)) {
+                // Add the new filename to our array
+                $document_paths[] = $doc_name;
+            }
+        }
+    }
+}
+
+// 3. Convert the array of document paths to a JSON string for the database
+$docs_json_to_db = json_encode($document_paths);
+
 // --- Database Insertion ---
 try {
     $sql = "INSERT INTO transfer_students (student_id, name, last_name, gender, bdate, address, contact, photo, previous_university, previous_major, transfer_date, document, status, notes) 
@@ -57,11 +70,11 @@ try {
     $stmt->bindParam(':bdate', $bdate);
     $stmt->bindParam(':address', $address);
     $stmt->bindParam(':contact', $contact);
-    $stmt->bindParam(':photo', $photo_filename);
+    $stmt->bindParam(':photo', $photo_path_to_db); // Bind photo filename
     $stmt->bindParam(':previous_university', $previous_university);
     $stmt->bindParam(':previous_major', $previous_major);
     $stmt->bindParam(':transfer_date', $transfer_date);
-    $stmt->bindParam(':document', $document_filename);
+    $stmt->bindParam(':document', $docs_json_to_db); // Bind the JSON string of document filenames
     $stmt->bindParam(':status', $status);
     $stmt->bindParam(':notes', $notes);
 
@@ -70,7 +83,7 @@ try {
     header("location: ../manage_transfers.php?success=1");
     exit();
 } catch (PDOException $e) {
-    // For debugging: error_log("DB Error: " . $e->getMessage());
+    // For debugging, you can use: error_log("DB Error: " . $e->getMessage());
     header("location: ../manage_transfers.php?error=1");
     exit();
 }
